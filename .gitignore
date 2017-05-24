@@ -1,3 +1,6 @@
+.idea
+
+##################C++ Ignore#################
 # Prerequisites
 *.d
 
