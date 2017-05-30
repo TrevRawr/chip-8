@@ -1,0 +1,12 @@
+#ifndef CHIP_8_CYCLESTATUS_H
+#define CHIP_8_CYCLESTATUS_H
+
+
+enum CycleStatus {
+    SUCCESS,
+    INTERRUPT_CLEARSCREEN,
+    INTERRUPT_DRAWSCREEN,
+};
+
+
+#endif //CHIP_8_CYCLESTATUS_H
