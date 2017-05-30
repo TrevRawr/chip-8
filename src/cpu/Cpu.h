@@ -16,7 +16,9 @@ public:
     CycleStatus emulateCycle();
 
 private:
-    static const int NUM_GENERAL_PURPOSE_REGISTERS = 15;
+    static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
+    //this includes the "carry-flag" register VF
+    static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
     static const uint16_t MEMORY_MAP_INTERPRETER_END = 0x1FF;
     static const int NUM_STACK_LEVELS = 16;
     static const int NUM_OP_CODE_IMPLEMENTATIONS = 16;
@@ -49,16 +51,37 @@ private:
 
     CycleStatus executeAssignOpcode(uint16_t opcode);
 
+    //0x1NNN
     CycleStatus executeJumpOpcode(uint16_t opcode);
+
+    //0x2XNN
+    CycleStatus executeCallSubroutineOpcode(uint16_t opcode);
+
+    //0x3XNN
+    CycleStatus executeRegisterEqualsValueOpcode(uint16_t opcode);
+
+    void skipInstruction();
+
+    //0x4XNN
+    CycleStatus executeRegisterNotEqualsValueOpcode(uint16_t opcode);
+
+    //0x5XY0
+    CycleStatus executeValueEqualsValueOpcode(uint16_t opcode);
+
+    //0x6XNN
+    CycleStatus executeAssignRegisterOpcode(uint16_t opcode);
+
+    //0x7XNN
+    CycleStatus executeAddToRegisterOpcode(uint16_t opcode);
 
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
     typedef CycleStatus (Cpu::*MemberFunction) (uint16_t opcode);
     MemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
-        &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode,
+        &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
+        &Cpu::executeRegisterEqualsValueOpcode,
+        &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeValueEqualsValueOpcode, &Cpu::executeAssignRegisterOpcode,
+        &Cpu::executeAddToRegisterOpcode,
         &Cpu::delegateToAritmethicOpcodeImplementations, &Cpu::handleUnimplementedOpcode, &Cpu::executeAssignOpcode,
         &Cpu::handleUnimplementedOpcode,
         &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
@@ -77,6 +100,8 @@ private:
         &Cpu::handleUnimplementedOpcode
     };
 
+    int getSecondNibbleFromOpcode(uint16_t opcode) const;
+    int getFirstNibbleFromOpcode(uint16_t opcode) const;
 };
 
 #endif //CHIP_8_CPU_H
