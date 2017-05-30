@@ -100,14 +100,9 @@ CycleStatus Cpu::executeRegisterNotEqualsValueOpcode(uint16_t opcode) {
     return SUCCESS;
 }
 
-int Cpu::getSecondNibbleFromOpcode(uint16_t opcode) const {
-    int registerNumber = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::BYTE_FIRST_TO_LAST;
-    return registerNumber;
-}
-
 CycleStatus Cpu::executeValueEqualsValueOpcode(uint16_t opcode) {
-    int value1 = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::BYTE_FIRST_TO_LAST;
-    int value2 = (opcode & OpcodeBitmasks::THIRD_NIBBLE) >> OpcodeBitshifts::NIBBLE;
+    int value1 = getSecondNibbleFromOpcode(opcode);
+    int value2 = getThirdNibbleFromOpcode(opcode);
     if (value1 == value2) {
         skipInstruction();
     }
@@ -126,9 +121,114 @@ CycleStatus Cpu::executeAddToRegisterOpcode(uint16_t opcode) {
     return SUCCESS;
 }
 
+CycleStatus Cpu::executeArithmeticSetOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberY];
+    return SUCCESS;
+}
+
+//TODO: refactor bitwise operation instructions to reduce code duplication
+CycleStatus Cpu::executeArithmeticSetOrOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] | generalPurposeRegisters[registerNumberY];
+    return SUCCESS;
+}
+
+CycleStatus Cpu::executeArithmeticSetAndOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] & generalPurposeRegisters[registerNumberY];
+    return SUCCESS;
+}
+
+CycleStatus Cpu::executeArithmeticSetXOROpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] ^ generalPurposeRegisters[registerNumberY];
+    return SUCCESS;
+}
+
+CycleStatus Cpu::executeArithmeticAddOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getSecondNibbleFromOpcode(opcode);
+    setAdditionOverflowRegister(registerNumberX, registerNumberY);
+    //note that if this overflows, the overflowed result will start counting from zero again after the overflow occurs
+    //this is c++'s default behaviour, so we don't have to do anything special to implement this
+    generalPurposeRegisters[registerNumberX] += generalPurposeRegisters[registerNumberY];
+    return SUCCESS;
+}
+
+//TODO: refactor SetSubtraction...() methods to reduce code duplication
+void Cpu::setAdditionOverflowRegister(int registerNumberX, int registerNumberY) {
+    if (generalPurposeRegisters[registerNumberX] + generalPurposeRegisters[registerNumberY] > Constants::MAX_BYTE_SIZE) {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    }
+}
+
+CycleStatus Cpu::executeArithmeticSubtractOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getSecondNibbleFromOpcode(opcode);
+    setSubtractionXYOverflowRegisters(registerNumberX, registerNumberY);
+    generalPurposeRegisters[registerNumberX] -= generalPurposeRegisters[registerNumberY];
+    return SUCCESS;
+}
+
+void Cpu::setSubtractionXYOverflowRegisters(int registerNumberX, int registerNumberY) {
+    if (generalPurposeRegisters[registerNumberX] - generalPurposeRegisters[registerNumberY] < 0) {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    }
+}
+
+CycleStatus Cpu::executeArithmeticShiftRightOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    generalPurposeRegisters[INDEX_CARRY_REGISTER] = (uint8_t) (opcode & OpcodeBitmasks::LAST_BIT);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] >> 1;
+    return SUCCESS;
+}
+
+CycleStatus Cpu::executeArithmeticSubtractDifferenceOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getSecondNibbleFromOpcode(opcode);
+    setSubtractionYXOverflowRegisters(registerNumberX, registerNumberY);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberY] - generalPurposeRegisters[registerNumberX];
+    return SUCCESS;
+}
+
+void Cpu::setSubtractionYXOverflowRegisters(int registerNumberX, int registerNumberY) {
+    if (generalPurposeRegisters[registerNumberY] - generalPurposeRegisters[registerNumberX] < 0) {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    }
+}
+
+CycleStatus Cpu::executeArithmeticShiftLeftOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    generalPurposeRegisters[INDEX_CARRY_REGISTER] =
+            (uint8_t) ((generalPurposeRegisters[registerNumberX] & OpcodeBitmasks::FIRST_BIT) >> OpcodeBitshifts::BIT_FIRST_TO_LAST);
+    generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] << 1;
+    return SUCCESS;
+}
+
 int Cpu::getFirstNibbleFromOpcode(uint16_t opcode) const {
     int registerNumber = (opcode & OpcodeBitmasks::FIRST_NIBBLE) >> OpcodeBitshifts::NIBBLE_FIRST_TO_LAST;
     return registerNumber;
+}
+
+int Cpu::getSecondNibbleFromOpcode(uint16_t opcode) const {
+    int registerNumber = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::BYTE_FIRST_TO_LAST;
+    return registerNumber;
+}
+
+int Cpu::getThirdNibbleFromOpcode(uint16_t opcode) const {
+    int value2 = (opcode & OpcodeBitmasks::THIRD_NIBBLE) >> OpcodeBitshifts::NIBBLE;
+    return value2;
 }
 
 

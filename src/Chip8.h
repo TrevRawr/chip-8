@@ -42,6 +42,7 @@ private:
     Display display;
     Input input;
 
+    void loadFontToMemory();
 };
 
 

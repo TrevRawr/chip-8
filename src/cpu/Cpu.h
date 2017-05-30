@@ -19,10 +19,11 @@ private:
     static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
     //this includes the "carry-flag" register VF
     static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
+    static const int INDEX_CARRY_REGISTER = 15;
     static const uint16_t MEMORY_MAP_INTERPRETER_END = 0x1FF;
     static const int NUM_STACK_LEVELS = 16;
     static const int NUM_OP_CODE_IMPLEMENTATIONS = 16;
-    static const int NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS = 17;
+    static const int NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS = 16;
 
     uint8_t generalPurposeRegisters[NUM_GENERAL_PURPOSE_REGISTERS];
     uint16_t indexRegister;
@@ -74,6 +75,33 @@ private:
     //0x7XNN
     CycleStatus executeAddToRegisterOpcode(uint16_t opcode);
 
+    //0x8XY0
+    CycleStatus executeArithmeticSetOpcode(uint16_t opcode);
+
+    //0x8XY1
+    CycleStatus executeArithmeticSetOrOpcode(uint16_t opcode);
+
+    //0x8XY2
+    CycleStatus executeArithmeticSetAndOpcode(uint16_t opcode);
+
+    //0x8XY3
+    CycleStatus executeArithmeticSetXOROpcode(uint16_t opcode);
+
+    //0x8XY4
+    CycleStatus executeArithmeticAddOpcode(uint16_t opcode);
+
+    //0x8XY5
+    CycleStatus executeArithmeticSubtractOpcode(uint16_t opcode);
+
+    //0x8XY6
+    CycleStatus executeArithmeticShiftRightOpcode(uint16_t opcode);
+
+    //0x8XY7
+    CycleStatus executeArithmeticSubtractDifferenceOpcode(uint16_t opcode);
+
+    //0x8XYE
+    CycleStatus executeArithmeticShiftLeftOpcode(uint16_t opcode);
+
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
     typedef CycleStatus (Cpu::*MemberFunction) (uint16_t opcode);
@@ -89,19 +117,25 @@ private:
     };
 
     MemberFunction arithmeticOpcodeImplementations[NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS] = {
-            &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode,
+            &Cpu::executeArithmeticSetOpcode, &Cpu::executeArithmeticSetOrOpcode, &Cpu::executeArithmeticSetAndOpcode,
+        &Cpu::executeArithmeticSetXOROpcode,
+        &Cpu::executeArithmeticAddOpcode, &Cpu::executeArithmeticSubtractOpcode, &Cpu::executeArithmeticShiftRightOpcode,
+        &Cpu::executeArithmeticSubtractDifferenceOpcode,
         &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
         &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode,
+        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::executeArithmeticShiftLeftOpcode,
         &Cpu::handleUnimplementedOpcode
     };
 
-    int getSecondNibbleFromOpcode(uint16_t opcode) const;
     int getFirstNibbleFromOpcode(uint16_t opcode) const;
+    int getSecondNibbleFromOpcode(uint16_t opcode) const;
+    int getThirdNibbleFromOpcode(uint16_t opcode) const;
+
+    void setAdditionOverflowRegister(int registerNumberX, int registerNumberY);
+
+    void setSubtractionXYOverflowRegisters(int registerNumberX, int registerNumberY);
+
+    void setSubtractionYXOverflowRegisters(int registerNumberX, int registerNumberY);
 };
 
 #endif //CHIP_8_CPU_H

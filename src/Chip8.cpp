@@ -20,9 +20,12 @@ void Chip8::stopEmulation() {
 constexpr unsigned char Chip8::DEFAULT_FONT_SET[FONTSET_BUFFER_SIZE];
 
 Chip8::Chip8() : memory(Memory()), cpu(Cpu(memory)) {
-    //load chip-8 font into memory
+    loadFontToMemory();
+}
+
+void Chip8::loadFontToMemory() {
     for (unsigned int i = 0; i < FONTSET_BUFFER_SIZE; i++) {
-        memory.setDataAtAddress(i + Constants::MEMORY_PROGRAM_START_LOCATION, DEFAULT_FONT_SET[i]);
+        memory.setDataAtAddress(i + Constants::MEMORY_FONT_START_LOCATION, DEFAULT_FONT_SET[i]);
     }
 }
 

@@ -8,6 +8,7 @@ public:
     static const int NIBBLE_FIRST_TO_LAST = 12;
     static const int BYTE_FIRST_TO_LAST = 8;
     static const int NIBBLE = 4;
+    static const int BIT_FIRST_TO_LAST = 15;
 };
 
 #endif //CHIP_8_OPCODEBITSHIFTS_H
