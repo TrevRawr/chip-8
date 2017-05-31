@@ -5,10 +5,7 @@ void Chip8::beginEmulation() {
     //TODO: consider starting this in a separate thread so that the emulator can be stopped if desired
     isEmulating = true;
     while (isEmulating) {
-        CycleStatus status = cpu.emulateCycle();
-        if (status == CycleStatus::INTERRUPT_DRAWSCREEN) {
-            //TODO: have display module update screen
-        }
+        cpu.emulateCycle();
     }
 }
 

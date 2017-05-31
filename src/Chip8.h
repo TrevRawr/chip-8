@@ -5,7 +5,6 @@
 #include "cpu/Cpu.h"
 #include "display/Display.h"
 #include "input/Input.h"
-#include "cpu/CycleStatus.h"
 #include <string>
 
 class Chip8 {

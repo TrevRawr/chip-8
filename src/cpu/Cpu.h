@@ -3,7 +3,6 @@
 
 
 #include <cstdint>
-#include "CycleStatus.h"
 #include "../storage/Memory.h"
 #include "../constants/OpcodeBitmasks.h"
 #include "../constants/Opcodes.h"
@@ -13,7 +12,7 @@ class Cpu {
 public:
     Cpu(Memory &memory);
 
-    CycleStatus emulateCycle();
+    void emulateCycle();
 
 private:
     static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
@@ -42,79 +41,79 @@ private:
 
     uint16_t fetchOpCode();
 
-    CycleStatus decodeAndExecuteOpcode(uint16_t opcode);
+    void decodeAndExecuteOpcode(uint16_t opcode);
 
-    CycleStatus handleUnimplementedOpcode(uint16_t opcode);
+    void handleUnimplementedOpcode(uint16_t opcode);
 
-    CycleStatus delegateToAritmethicOpcodeImplementations(uint16_t opcode);
+    void delegateToAritmethicOpcodeImplementations(uint16_t opcode);
 
-    CycleStatus executeOpcodeBeginningWithZero(uint16_t opcode);
+    void executeOpcodeBeginningWithZero(uint16_t opcode);
 
     //0x1NNN
-    CycleStatus executeJumpOpcode(uint16_t opcode);
+    void executeJumpOpcode(uint16_t opcode);
 
     //0x2XNN
-    CycleStatus executeCallSubroutineOpcode(uint16_t opcode);
+    void executeCallSubroutineOpcode(uint16_t opcode);
 
     //0x3XNN
-    CycleStatus executeRegisterEqualsValueOpcode(uint16_t opcode);
+    void executeRegisterEqualsValueOpcode(uint16_t opcode);
 
     void skipInstruction();
 
     //0x4XNN
-    CycleStatus executeRegisterNotEqualsValueOpcode(uint16_t opcode);
+    void executeRegisterNotEqualsValueOpcode(uint16_t opcode);
 
     //0x5XY0
-    CycleStatus executeValueEqualsValueOpcode(uint16_t opcode);
+    void executeValueEqualsValueOpcode(uint16_t opcode);
 
     //0x6XNN
-    CycleStatus executeAssignRegisterOpcode(uint16_t opcode);
+    void executeAssignRegisterOpcode(uint16_t opcode);
 
     //0x7XNN
-    CycleStatus executeAddToRegisterOpcode(uint16_t opcode);
+    void executeAddToRegisterOpcode(uint16_t opcode);
 
     //0x8XY0
-    CycleStatus executeArithmeticSetOpcode(uint16_t opcode);
+    void executeArithmeticSetOpcode(uint16_t opcode);
 
     //0x8XY1
-    CycleStatus executeArithmeticSetOrOpcode(uint16_t opcode);
+    void executeArithmeticSetOrOpcode(uint16_t opcode);
 
     //0x8XY2
-    CycleStatus executeArithmeticSetAndOpcode(uint16_t opcode);
+    void executeArithmeticSetAndOpcode(uint16_t opcode);
 
     //0x8XY3
-    CycleStatus executeArithmeticSetXOROpcode(uint16_t opcode);
+    void executeArithmeticSetXOROpcode(uint16_t opcode);
 
     //0x8XY4
-    CycleStatus executeArithmeticAddOpcode(uint16_t opcode);
+    void executeArithmeticAddOpcode(uint16_t opcode);
 
     //0x8XY5
-    CycleStatus executeArithmeticSubtractOpcode(uint16_t opcode);
+    void executeArithmeticSubtractOpcode(uint16_t opcode);
 
     //0x8XY6
-    CycleStatus executeArithmeticShiftRightOpcode(uint16_t opcode);
+    void executeArithmeticShiftRightOpcode(uint16_t opcode);
 
     //0x8XY7
-    CycleStatus executeArithmeticSubtractDifferenceOpcode(uint16_t opcode);
+    void executeArithmeticSubtractDifferenceOpcode(uint16_t opcode);
 
     //0x8XYE
-    CycleStatus executeArithmeticShiftLeftOpcode(uint16_t opcode);
+    void executeArithmeticShiftLeftOpcode(uint16_t opcode);
 
     //0x9XY0
-    CycleStatus executeNotEqualsRegistersOpcode(uint16_t opcode);
+    void executeNotEqualsRegistersOpcode(uint16_t opcode);
 
     //0xANNN
-    CycleStatus executeAssignOpcode(uint16_t opcode);
+    void executeAssignOpcode(uint16_t opcode);
 
     //0xBNNN
-    CycleStatus executeJumpToAddressPlusRegisterOpcode(uint16_t opcode);
+    void executeJumpToAddressPlusRegisterOpcode(uint16_t opcode);
 
     //0xCNXX
-    CycleStatus executeRandomNumberOpcode(uint16_t opcode);
+    void executeRandomNumberOpcode(uint16_t opcode);
 
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
-    typedef CycleStatus (Cpu::*MemberFunction) (uint16_t opcode);
+    typedef void (Cpu::*MemberFunction) (uint16_t opcode);
     MemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
         &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
         &Cpu::executeRegisterEqualsValueOpcode,
