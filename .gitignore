@@ -1,4 +1,6 @@
 .idea
+#ignore game files in project directory
+c8games
 
 ##################C++ Ignore#################
 # Prerequisites

@@ -11,7 +11,7 @@ class Chip8 {
 public:
     Chip8();
 
-    void selectGameFile(std::string game);
+    void loadGameFile(std::string game);
     void beginEmulation();
     void stopEmulation();
 private:
@@ -37,8 +37,8 @@ private:
 
     bool isEmulating = false;
     Memory memory;
-    Cpu cpu;
     Display display;
+    Cpu cpu;
     Input input;
 
     void loadFontToMemory();

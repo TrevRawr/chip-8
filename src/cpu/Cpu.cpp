@@ -1,15 +1,18 @@
+#include <sstream>
 #include "Cpu.h"
 #include "../constants/Constants.h"
 #include "../constants/OpcodeBitshifts.h"
 #include "../utils/RandomUtil.h"
 
-Cpu::Cpu(Memory &memory) : memory(memory) {
+Cpu::Cpu(Memory &memory, Display &display) : memory(memory), display(display) {
     programCounter = Constants::MEMORY_PROGRAM_START_LOCATION;
     indexRegister = 0;
     currStackLevel = 0;
 
+    for (int i = 0; i < NUM_GENERAL_PURPOSE_REGISTERS; i++) {
+        generalPurposeRegisters[i] = 0;
+    }
     //TODO: figure out how to initialize these
-//    generalPurposeRegisters = ???
 //    delayTimerRegister = 0;
 //    soundTimerRegister = 0;
 }
@@ -17,7 +20,13 @@ Cpu::Cpu(Memory &memory) : memory(memory) {
 void Cpu::emulateCycle() {
     uint16_t opcode = fetchOpCode();
 
-    //TODO: make sure there are no opcodes that require a different amount of instructions fetched
+    //note that not every instruction increments the program counter by 2
+    //for example, a jump instruction avoids this, but since instructions are executed after this increment
+    //an instruction such as the jump instruction will overwrite this increment.
+    //other instructions may rely on the value of the program counter before this increment, so in some instruction
+    //implementations, we have to "reverse" this increment by subtracting 2 from the program counter.
+    //This happens on very few instructions, so it is better to increment here to avoid the excessive code duplication
+    //of updating the program counter in every instruction implementation
     programCounter += DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE;
 
     decodeAndExecuteOpcode(opcode);
@@ -36,12 +45,14 @@ void Cpu::decodeAndExecuteOpcode(uint16_t opcode) {
 }
 
 void Cpu::delegateToAritmethicOpcodeImplementations(uint16_t opcode) {
-    //for all arithmetic opcodes (beginning with first nibble == 8), the last nibble determines the specific arithmetic operation
+    //for all arithmetic opcodes (opcodes beginning with first nibble == 8), the last nibble determines the specific arithmetic operation
     return (this->*arithmeticOpcodeImplementations[opcode & OpcodeBitmasks::LAST_NIBBLE])(opcode);
 }
 
 void Cpu::handleUnimplementedOpcode(uint16_t opcode) {
-    throw InstructionUnimplementedException("The specified opcode has not yet been implemented: " + opcode);
+    std::stringstream errorMessage;
+    errorMessage << "The specified opcode has not yet been implemented: " << opcode;
+    throw InstructionUnimplementedException(errorMessage.str());
 }
 
 void Cpu::executeOpcodeBeginningWithZero(uint16_t opcode) {
@@ -231,6 +242,40 @@ void Cpu::executeJumpToAddressPlusRegisterOpcode(uint16_t opcode) {
 void Cpu::executeRandomNumberOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
     generalPurposeRegisters[registerNumberX] = (uint8_t) (opcode & OpcodeBitmasks::LAST_BYTE) & RandomUtil::getRandomNumber();
+}
+
+void Cpu::executeDrawSpriteOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+
+    int coordinateX = generalPurposeRegisters[registerNumberX];
+    int coordinateY = generalPurposeRegisters[registerNumberY];
+    unsigned int spriteHeight = opcode & OpcodeBitmasks::LAST_NIBBLE;
+
+    //default value for the carry register if no pixels are toggled off
+    generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+
+    for (unsigned int height = 0; height < spriteHeight; height++) {
+        uint8_t pixelRow = memory.getDataAtAddress(indexRegister + height);
+        //a bitmask that in binary looks like 10000000
+        //we use this to read the values of the bits in the pixelRow from left to right
+        uint8_t bitmask = 0x80;
+        for (int width = 0; width < Display::SPRITE_WIDTH; width++) {
+            //shift the bitmask over by one each iteration to evaluate the next bit of the pixelRow on the next loop iteration
+            //ex: on the second iteration, (bitmask >> width) will be 01000000 and can be used to observe the value of the 2nd bit of the pixelRow
+            //a non-zero value means the pixel must have been on
+            bool isSpritePixelSet = (pixelRow & (bitmask >> width)) != 0;
+            bool previousPixelValue = display.getPixel(coordinateX + width, coordinateY + height);
+            //we set the pixel values in xor mode according to the specification of the chip-8
+            bool newPixelValue = previousPixelValue ^ isSpritePixelSet;
+            display.setPixel(coordinateX + width, coordinateY + height, newPixelValue);
+
+            bool isPixelToggledOff = previousPixelValue && !newPixelValue;
+            if (isPixelToggledOff) {
+                generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
+            }
+        }
+    }
 }
 
 

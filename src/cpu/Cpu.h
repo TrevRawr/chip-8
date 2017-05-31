@@ -1,16 +1,16 @@
 #ifndef CHIP_8_CPU_H
 #define CHIP_8_CPU_H
 
-
 #include <cstdint>
 #include "../storage/Memory.h"
 #include "../constants/OpcodeBitmasks.h"
 #include "../constants/Opcodes.h"
 #include "../exceptions/InstructionUnimplementedException.h"
+#include "../display/Display.h"
 
 class Cpu {
 public:
-    Cpu(Memory &memory);
+    Cpu(Memory &memory, Display &display);
 
     void emulateCycle();
 
@@ -31,6 +31,7 @@ private:
     uint8_t soundTimerRegister;
 
     Memory& memory;
+    Display& display;
 
     //this is not explicitly part of the chip-8 specification,
     //but will be required to keep track of the program counter
@@ -111,6 +112,8 @@ private:
     //0xCNXX
     void executeRandomNumberOpcode(uint16_t opcode);
 
+    void executeDrawSpriteOpcode(uint16_t opcode);
+
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
     typedef void (Cpu::*MemberFunction) (uint16_t opcode);
@@ -121,7 +124,7 @@ private:
         &Cpu::executeAddToRegisterOpcode,
         &Cpu::delegateToAritmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
         &Cpu::executeJumpToAddressPlusRegisterOpcode,
-        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
+        &Cpu::executeRandomNumberOpcode, &Cpu::executeDrawSpriteOpcode, &Cpu::handleUnimplementedOpcode,
         &Cpu::handleUnimplementedOpcode
     };
 
