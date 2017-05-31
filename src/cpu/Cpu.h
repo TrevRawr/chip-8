@@ -50,8 +50,6 @@ private:
 
     CycleStatus executeOpcodeBeginningWithZero(uint16_t opcode);
 
-    CycleStatus executeAssignOpcode(uint16_t opcode);
-
     //0x1NNN
     CycleStatus executeJumpOpcode(uint16_t opcode);
 
@@ -102,6 +100,18 @@ private:
     //0x8XYE
     CycleStatus executeArithmeticShiftLeftOpcode(uint16_t opcode);
 
+    //0x9XY0
+    CycleStatus executeNotEqualsRegistersOpcode(uint16_t opcode);
+
+    //0xANNN
+    CycleStatus executeAssignOpcode(uint16_t opcode);
+
+    //0xBNNN
+    CycleStatus executeJumpToAddressPlusRegisterOpcode(uint16_t opcode);
+
+    //0xCNXX
+    CycleStatus executeRandomNumberOpcode(uint16_t opcode);
+
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
     typedef CycleStatus (Cpu::*MemberFunction) (uint16_t opcode);
@@ -110,8 +120,8 @@ private:
         &Cpu::executeRegisterEqualsValueOpcode,
         &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeValueEqualsValueOpcode, &Cpu::executeAssignRegisterOpcode,
         &Cpu::executeAddToRegisterOpcode,
-        &Cpu::delegateToAritmethicOpcodeImplementations, &Cpu::handleUnimplementedOpcode, &Cpu::executeAssignOpcode,
-        &Cpu::handleUnimplementedOpcode,
+        &Cpu::delegateToAritmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
+        &Cpu::executeJumpToAddressPlusRegisterOpcode,
         &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
         &Cpu::handleUnimplementedOpcode
     };

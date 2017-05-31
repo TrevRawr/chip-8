@@ -1,6 +1,7 @@
 #include "Cpu.h"
 #include "../constants/Constants.h"
 #include "../constants/OpcodeBitshifts.h"
+#include "../utils/RandomUtil.h"
 
 Cpu::Cpu(Memory &memory) : memory(memory) {
     programCounter = Constants::MEMORY_PROGRAM_START_LOCATION;
@@ -230,6 +231,28 @@ int Cpu::getThirdNibbleFromOpcode(uint16_t opcode) const {
     int value2 = (opcode & OpcodeBitmasks::THIRD_NIBBLE) >> OpcodeBitshifts::NIBBLE;
     return value2;
 }
+
+CycleStatus Cpu::executeNotEqualsRegistersOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+    if (generalPurposeRegisters[registerNumberX] != generalPurposeRegisters[registerNumberY]) {
+        skipInstruction();
+    }
+    return CycleStatus::SUCCESS;
+}
+
+CycleStatus Cpu::executeJumpToAddressPlusRegisterOpcode(uint16_t opcode) {
+    programCounter = (opcode & OpcodeBitmasks::LAST_THREE_NIBBLES) + generalPurposeRegisters[0];
+    return SUCCESS;
+}
+
+CycleStatus Cpu::executeRandomNumberOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumberX] = (uint8_t) (opcode & OpcodeBitmasks::LAST_BYTE) & RandomUtil::getRandomNumber();
+    return SUCCESS;
+}
+
+
 
 
 
