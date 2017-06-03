@@ -188,9 +188,9 @@ void Cpu::executeArithmeticSubtractOpcode(uint16_t opcode) {
 
 void Cpu::setSubtractionXYOverflowRegisters(int registerNumberX, int registerNumberY) {
     if (generalPurposeRegisters[registerNumberX] - generalPurposeRegisters[registerNumberY] < 0) {
-        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
-    } else {
         generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
     }
 }
 
