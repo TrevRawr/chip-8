@@ -113,7 +113,7 @@ void Cpu::skipInstruction() {
 void Cpu::executeRegisterNotEqualsValueOpcode(uint16_t opcode) {
     int registerNumber = getSecondNibbleFromOpcode(opcode);
     int value = opcode & OpcodeBitmasks::LAST_BYTE;
-    if (generalPurposeRegisters[registerNumber] == value) {
+    if (generalPurposeRegisters[registerNumber] != value) {
         skipInstruction();
     }
 }
