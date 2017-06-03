@@ -7,10 +7,11 @@
 #include "../constants/Opcodes.h"
 #include "../exceptions/InstructionUnimplementedException.h"
 #include "../display/Display.h"
+#include "../input/InputController.h"
 
 class Cpu {
 public:
-    Cpu(Memory &memory, Display &display);
+    Cpu(Memory &memory, Display &display, InputController &inputController);
 
     void emulateCycle();
 
@@ -19,7 +20,6 @@ private:
     //this includes the "carry-flag" register VF
     static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
     static const int INDEX_CARRY_REGISTER = 15;
-    static const uint16_t MEMORY_MAP_INTERPRETER_END = 0x1FF;
     static const int NUM_STACK_LEVELS = 16;
     static const int NUM_OP_CODE_IMPLEMENTATIONS = 16;
     static const int NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS = 16;
@@ -32,13 +32,14 @@ private:
 
     Memory& memory;
     Display& display;
+    InputController& inputController;
 
     //this is not explicitly part of the chip-8 specification,
     //but will be required to keep track of the program counter
     //after jump instructions are used, so the program counter
     //can return to its previous location later
     uint16_t stack[NUM_STACK_LEVELS];
-    int currStackLevel;
+    int currStackLevel = 0;
 
     uint16_t fetchOpCode();
 
@@ -46,9 +47,12 @@ private:
 
     void handleUnimplementedOpcode(uint16_t opcode);
 
-    void delegateToAritmethicOpcodeImplementations(uint16_t opcode);
+    void delegateToArithmethicOpcodeImplementations(uint16_t opcode);
 
     void executeOpcodeBeginningWithZero(uint16_t opcode);
+
+    //0x00EE
+    void executeReturnFromSubroutineOpcode();
 
     //0x1NNN
     void executeJumpOpcode(uint16_t opcode);
@@ -112,23 +116,57 @@ private:
     //0xCNXX
     void executeRandomNumberOpcode(uint16_t opcode);
 
+    //0xDXYN
     void executeDrawSpriteOpcode(uint16_t opcode);
+
+    //0xEX9E and 0xEXA1
+    void executeKeyPressedSkipOpcodes(uint16_t opcode);
+
+    void delegateToFOpcodeImplementations(uint16_t opcode);
+
+    //0xFX07
+    void executeSetRegisterToDelayTimerOpcode(uint16_t opcode);
+
+    //0xFX0A
+    void executeBlockKeyPressesOpcode(uint16_t opcode);
+
+    //0xFX15
+    void executeSetDelayTimerToRegisterOpcode(uint16_t opcode);
+
+    //0xFX18
+    void executeSetSoundTimerToRegisterOpcode(uint16_t opcode);
+
+    //0xFX1E
+    void executeAddRegisterToIndexRegisterOpcode(uint16_t opcode);
+
+    //0xFX29
+    void executeSetSpriteLocationOpcode(uint16_t opcode);
+
+    //0xFX33
+    void executeConvertToBCDOpcode(uint16_t opcode);
+
+    //0xFX55
+    void executeRegisterDumpOpcode(uint16_t opcode);
+
+    //0xFX65
+    void executeRegisterLoadOpcode(uint16_t opcode);
+
+    typedef void (Cpu::*OpcodeMemberFunction) (uint16_t opcode);
 
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
-    typedef void (Cpu::*MemberFunction) (uint16_t opcode);
-    MemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
+    OpcodeMemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
         &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
         &Cpu::executeRegisterEqualsValueOpcode,
         &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeValueEqualsValueOpcode, &Cpu::executeAssignRegisterOpcode,
         &Cpu::executeAddToRegisterOpcode,
-        &Cpu::delegateToAritmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
+        &Cpu::delegateToArithmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
         &Cpu::executeJumpToAddressPlusRegisterOpcode,
-        &Cpu::executeRandomNumberOpcode, &Cpu::executeDrawSpriteOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode
+        &Cpu::executeRandomNumberOpcode, &Cpu::executeDrawSpriteOpcode, &Cpu::executeKeyPressedSkipOpcodes,
+        &Cpu::delegateToFOpcodeImplementations
     };
 
-    MemberFunction arithmeticOpcodeImplementations[NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS] = {
+    OpcodeMemberFunction arithmeticOpcodeImplementations[NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS] = {
             &Cpu::executeArithmeticSetOpcode, &Cpu::executeArithmeticSetOrOpcode, &Cpu::executeArithmeticSetAndOpcode,
         &Cpu::executeArithmeticSetXOROpcode,
         &Cpu::executeArithmeticAddOpcode, &Cpu::executeArithmeticSubtractOpcode, &Cpu::executeArithmeticShiftRightOpcode,
@@ -138,9 +176,9 @@ private:
         &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::executeArithmeticShiftLeftOpcode,
         &Cpu::handleUnimplementedOpcode
     };
-
     int getFirstNibbleFromOpcode(uint16_t opcode) const;
-    int getSecondNibbleFromOpcode(uint16_t opcode) const;
+    unsigned int getSecondNibbleFromOpcode(uint16_t opcode) const;
+
     int getThirdNibbleFromOpcode(uint16_t opcode) const;
 
     void setAdditionOverflowRegister(int registerNumberX, int registerNumberY);
@@ -148,6 +186,10 @@ private:
     void setSubtractionXYOverflowRegisters(int registerNumberX, int registerNumberY);
 
     void setSubtractionYXOverflowRegisters(int registerNumberX, int registerNumberY);
+
+    void setIndexOverflowRegister(int registerNumber);
+
+    void updateTimers();
 };
 
 #endif //CHIP_8_CPU_H

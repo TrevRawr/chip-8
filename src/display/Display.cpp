@@ -1,32 +1,30 @@
 #include "Display.h"
 
 void Display::setPixel(int x, int y, bool value) {
-    checkPixelInBounds(x, y);
-    int pixelIndex = getPixelIndex(x, y);
-    screenPixels[pixelIndex] = value;
-    if (value) {
-        setSdlPixel(x, y, 0xFFFF);
-    } else {
-        setSdlPixel(x, y, 0x0000);
+    if (isPixelInBounds(x, y)) {
+        int pixelIndex = getPixelIndex(x, y);
+        screenPixels[pixelIndex] = value;
+        if (value) {
+            setSdlPixel(x, y, 0xFFFF);
+        } else {
+            setSdlPixel(x, y, 0x0000);
+        }
     }
-
-    SDL_UpdateWindowSurface(window);
 }
 
 bool Display::getPixel(int x, int y) {
-    checkPixelInBounds(x, y);
-    return screenPixels[getPixelIndex(x, y)];
+    if (isPixelInBounds(x, y)) {
+        return screenPixels[getPixelIndex(x, y)];
+    }
+    return false;
 }
 
 int Display::getPixelIndex(int x, int y) const {
     return x + SCREEN_WIDTH * y;
 }
 
-void Display::checkPixelInBounds(int x, int y) {
-    //TODO: see if this is allowed or not - I believe sprites are allowed to go out of bounds slightly, but should check exact semantics
-    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
-//        throw IndexOutOfBoundsException("Coordinate out of screen boundaries");
-    }
+bool Display::isPixelInBounds(int x, int y) {
+    return !(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT);
 }
 
 Display::Display() {
@@ -56,6 +54,18 @@ void Display::setSdlPixel(int x, int y, uint32_t pixel) {
 Display::~Display() {
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void Display::clearScreen() {
+    for (int width = 0; width < SCREEN_WIDTH; width++) {
+        for (int height = 0; height < SCREEN_HEIGHT; height++) {
+            setPixel(width, height, false);
+        }
+    }
+}
+
+void Display::updateScreen() {
+    SDL_UpdateWindowSurface(window);
 }
 
 

@@ -4,7 +4,7 @@
 #include "../constants/OpcodeBitshifts.h"
 #include "../utils/RandomUtil.h"
 
-Cpu::Cpu(Memory &memory, Display &display) : memory(memory), display(display) {
+Cpu::Cpu(Memory &memory, Display &display, InputController &inputController) : memory(memory), display(display), inputController(inputController) {
     programCounter = Constants::MEMORY_PROGRAM_START_LOCATION;
     indexRegister = 0;
     currStackLevel = 0;
@@ -18,6 +18,9 @@ Cpu::Cpu(Memory &memory, Display &display) : memory(memory), display(display) {
 }
 
 void Cpu::emulateCycle() {
+    //TODO: change delay to actual processor clock rate
+    SDL_Delay(1);
+    updateTimers();
     uint16_t opcode = fetchOpCode();
 
     //note that not every instruction increments the program counter by 2
@@ -30,6 +33,7 @@ void Cpu::emulateCycle() {
     programCounter += DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE;
 
     decodeAndExecuteOpcode(opcode);
+    display.updateScreen();
 }
 
 uint16_t Cpu::fetchOpCode() {
@@ -44,7 +48,7 @@ void Cpu::decodeAndExecuteOpcode(uint16_t opcode) {
     (this->*cpuOpcodeImplementations[getFirstNibbleFromOpcode(opcode)])(opcode);
 }
 
-void Cpu::delegateToAritmethicOpcodeImplementations(uint16_t opcode) {
+void Cpu::delegateToArithmethicOpcodeImplementations(uint16_t opcode) {
     //for all arithmetic opcodes (opcodes beginning with first nibble == 8), the last nibble determines the specific arithmetic operation
     return (this->*arithmeticOpcodeImplementations[opcode & OpcodeBitmasks::LAST_NIBBLE])(opcode);
 }
@@ -61,13 +65,19 @@ void Cpu::executeOpcodeBeginningWithZero(uint16_t opcode) {
     //function for that opcode with no switch statement similar to the below functions
     switch (opcode) {
         case Opcodes::CLEAR_DISPLAY:
+            display.clearScreen();
             return;
         case Opcodes::RETURN_FROM_SUBROUTINE:
-            //TODO: correctly implement this
+            executeReturnFromSubroutineOpcode();
             return;
         default:
             throw InstructionUnimplementedException("Opcode unimplemented. If you were trying to call the RCA 1802 program, this is intentionally unimplemented");
     }
+}
+
+void Cpu::executeReturnFromSubroutineOpcode() {
+    currStackLevel--;
+    programCounter = stack[currStackLevel] + DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE;
 }
 
 void Cpu::executeAssignOpcode(uint16_t opcode) {
@@ -153,7 +163,7 @@ void Cpu::executeArithmeticSetXOROpcode(uint16_t opcode) {
 
 void Cpu::executeArithmeticAddOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
-    int registerNumberY = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
     setAdditionOverflowRegister(registerNumberX, registerNumberY);
     //note that if this overflows, the overflowed result will start counting from zero again after the overflow occurs
     //this is c++'s default behaviour, so we don't have to do anything special to implement this
@@ -171,7 +181,7 @@ void Cpu::setAdditionOverflowRegister(int registerNumberX, int registerNumberY) 
 
 void Cpu::executeArithmeticSubtractOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
-    int registerNumberY = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
     setSubtractionXYOverflowRegisters(registerNumberX, registerNumberY);
     generalPurposeRegisters[registerNumberX] -= generalPurposeRegisters[registerNumberY];
 }
@@ -192,7 +202,7 @@ void Cpu::executeArithmeticShiftRightOpcode(uint16_t opcode) {
 
 void Cpu::executeArithmeticSubtractDifferenceOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
-    int registerNumberY = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
     setSubtractionYXOverflowRegisters(registerNumberX, registerNumberY);
     generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberY] - generalPurposeRegisters[registerNumberX];
 }
@@ -217,8 +227,8 @@ int Cpu::getFirstNibbleFromOpcode(uint16_t opcode) const {
     return registerNumber;
 }
 
-int Cpu::getSecondNibbleFromOpcode(uint16_t opcode) const {
-    int registerNumber = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::BYTE_FIRST_TO_LAST;
+unsigned int Cpu::getSecondNibbleFromOpcode(uint16_t opcode) const {
+    unsigned int registerNumber = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::BYTE_FIRST_TO_LAST;
     return registerNumber;
 }
 
@@ -277,6 +287,151 @@ void Cpu::executeDrawSpriteOpcode(uint16_t opcode) {
         }
     }
 }
+
+void Cpu::executeKeyPressedSkipOpcodes(uint16_t opcode) {
+    //Note this method implements two similar but different opcodes
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    unsigned int keyNumber = generalPurposeRegisters[registerNumberX];
+
+    switch(opcode & OpcodeBitmasks::LAST_BYTE) {
+        case Opcodes::KEYPRESS_SKIP_IF_PRESSED:
+            if (inputController.isKeyPressed(keyNumber)) {
+                skipInstruction();
+            }
+            break;
+        case Opcodes::KEYPRESS_SKIP_IF_NOT_PRESSED:
+            if (!inputController.isKeyPressed(keyNumber)) {
+                skipInstruction();
+            }
+            break;
+        default:
+            throw InstructionUnimplementedException("There is no such opcode");
+    }
+}
+
+void Cpu::delegateToFOpcodeImplementations(uint16_t opcode) {
+    switch (opcode & OpcodeBitmasks::LAST_BYTE) {
+        case Opcodes::SET_REGISTER_TO_DELAY_TIMER:
+            executeSetRegisterToDelayTimerOpcode(opcode);
+            break;
+        case Opcodes::BLOCK_KEY_PRESSES:
+            executeBlockKeyPressesOpcode(opcode);
+            break;
+        case Opcodes::SET_DELAY_TIMER_TO_REGISTER:
+            executeSetDelayTimerToRegisterOpcode(opcode);
+            break;
+        case Opcodes::SET_SOUND_TIMER_TO_REGISTER:
+            executeSetSoundTimerToRegisterOpcode(opcode);
+            break;
+        case Opcodes::ADD_REGISTER_TO_INDEX_REGISTER:
+            executeAddRegisterToIndexRegisterOpcode(opcode);
+            break;
+        case Opcodes::SET_SPRITE_LOCATION:
+            executeSetSpriteLocationOpcode(opcode);
+            break;
+        case Opcodes::CONVERT_TO_BCD:
+            executeConvertToBCDOpcode(opcode);
+            break;
+        case Opcodes::REGISTER_DUMP:
+            executeRegisterDumpOpcode(opcode);
+            break;
+        case Opcodes::REGISTER_LOAD:
+            executeRegisterLoadOpcode(opcode);
+            break;
+        default:
+            throw InstructionUnimplementedException("Specified opcode beginning with F doesn't exist");
+    }
+}
+
+void Cpu::executeSetRegisterToDelayTimerOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumberX] = delayTimerRegister;
+}
+
+void Cpu::executeBlockKeyPressesOpcode(uint16_t opcode) {
+    int registerNumber = getSecondNibbleFromOpcode(opcode);
+    generalPurposeRegisters[registerNumber] = inputController.waitForKeyPress();
+}
+
+void Cpu::executeSetDelayTimerToRegisterOpcode(uint16_t opcode) {
+    int registerNumber = getSecondNibbleFromOpcode(opcode);
+    delayTimerRegister = generalPurposeRegisters[registerNumber];
+}
+
+void Cpu::executeSetSoundTimerToRegisterOpcode(uint16_t opcode) {
+    int registerNumber = getSecondNibbleFromOpcode(opcode);
+    soundTimerRegister = generalPurposeRegisters[registerNumber];
+}
+
+void Cpu::executeAddRegisterToIndexRegisterOpcode(uint16_t opcode) {
+    int registerNumber = getSecondNibbleFromOpcode(opcode);
+    setIndexOverflowRegister(registerNumber);
+    indexRegister += generalPurposeRegisters[registerNumber];
+    //TODO: make sure this behaves correctly*************************************
+    if (indexRegister > Constants::MAX_INDEX_REGISTER_VALUE) {
+        indexRegister -= Constants::MAX_INDEX_REGISTER_VALUE;
+    }
+}
+
+void Cpu::setIndexOverflowRegister(int registerNumber) {
+    //note here that the indexRegister is a different size than the standard general purpose registers
+    if (indexRegister + generalPurposeRegisters[registerNumber] > Constants::MAX_INDEX_REGISTER_VALUE) {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    }
+}
+
+void Cpu::executeSetSpriteLocationOpcode(uint16_t opcode) {
+    int registerNumber = getSecondNibbleFromOpcode(opcode);
+    uint8_t characterNumber = generalPurposeRegisters[registerNumber];
+    indexRegister = Constants::MEMORY_FONT_START_LOCATION + (characterNumber * Constants::FONT_NUM_BYTES_PER_CHARACTER);
+}
+
+void Cpu::executeConvertToBCDOpcode(uint16_t opcode) {
+    int registerNumber = getSecondNibbleFromOpcode(opcode);
+    uint8_t numberToConvert = generalPurposeRegisters[registerNumber];
+
+    //the least significant gets put in memory location (indexRegister + 2)
+    unsigned int indexOfLeastSignificantDigit = 2;
+    uint8_t digitShiftAmount = 10;
+
+    //note: i < indexOfLeastSignificantDigit would normally be i >= 0, but the ints are unsigned, so instead of going to -1,
+    //the integer will go to MAX_INT_VALUE upon decrementing at zero
+    for (unsigned int i = indexOfLeastSignificantDigit; i <= indexOfLeastSignificantDigit; i--) {
+        //by modding by 10, we get rid of every part of a decimal number except for the last (least significant) digit
+        memory.setDataAtAddress(indexRegister + i, numberToConvert % digitShiftAmount);
+        //this removes the last digit of the number, and shifts every other (decimal) digit to the right by one
+        //this prepares the number for the next iteration by making the 2nd last digit the last digit,
+        //so next iteration we can mod by 10 to reveal the 2nd last digit
+        numberToConvert = numberToConvert / digitShiftAmount;
+    }
+}
+
+void Cpu::executeRegisterDumpOpcode(uint16_t opcode) {
+    unsigned int registerNumber = getSecondNibbleFromOpcode(opcode);
+    for (unsigned int i = 0; i <= registerNumber; i++) {
+        memory.setDataAtAddress(indexRegister + i, generalPurposeRegisters[i]);
+    }
+}
+
+void Cpu::executeRegisterLoadOpcode(uint16_t opcode) {
+    unsigned int registerNumber = getSecondNibbleFromOpcode(opcode);
+    for (unsigned int i = 0; i <= registerNumber; i++) {
+        generalPurposeRegisters[i] = memory.getDataAtAddress(indexRegister + i);
+    }
+}
+
+void Cpu::updateTimers() {
+    if (delayTimerRegister > 0) {
+        delayTimerRegister--;
+    }
+    if (soundTimerRegister > 0) {
+        soundTimerRegister--;
+    }
+}
+
+
 
 
 

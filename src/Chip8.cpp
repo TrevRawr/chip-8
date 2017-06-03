@@ -7,6 +7,7 @@ void Chip8::beginEmulation() {
     //TODO: consider starting this in a separate thread so that the emulator can be stopped if desired
     isEmulating = true;
     while (isEmulating) {
+        inputController.checkForKeyPresses();
         cpu.emulateCycle();
     }
 }
@@ -18,7 +19,7 @@ void Chip8::stopEmulation() {
 //needed for static class definition of this array to compile
 constexpr unsigned char Chip8::DEFAULT_FONT_SET[FONTSET_BUFFER_SIZE];
 
-Chip8::Chip8() : memory(Memory()), display(Display()), cpu(Cpu(memory, display)) {
+Chip8::Chip8() : memory(Memory()), display(Display()), cpu(Cpu(memory, display, inputController)) {
     loadFontToMemory();
 }
 

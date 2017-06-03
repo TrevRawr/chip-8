@@ -4,7 +4,7 @@
 
 #include "cpu/Cpu.h"
 #include "display/Display.h"
-#include "input/Input.h"
+#include "input/InputController.h"
 #include <string>
 
 class Chip8 {
@@ -38,8 +38,8 @@ private:
     bool isEmulating = false;
     Memory memory;
     Display display;
+    InputController inputController;
     Cpu cpu;
-    Input input;
 
     void loadFontToMemory();
 };
