@@ -15,6 +15,8 @@ public:
 
     void emulateCycle();
 
+    uint16_t getProgramCounter() const;
+
 private:
     static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
     //this includes the "carry-flag" register VF

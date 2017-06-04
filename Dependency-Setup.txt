@@ -1,0 +1,15 @@
+#######Build Instructions########
+Ideally, the CMake script would handle downloading all the dependencies from other repositories, but I suck at CMake, so for now, this will have to do...
+
+Setting Up Dependencies For Ubuntu:
+
+1. Install SDL2
+- sudo apt install libsdl2-dev
+
+2. Install Gtest
+- sudo apt install libgtest-dev
+- cd /usr/src/gtest/
+- sudo cmake .
+- sudo make
+- sudo mv libg* /usr/lib/
+

@@ -431,6 +431,10 @@ void Cpu::updateTimers() {
     }
 }
 
+uint16_t Cpu::getProgramCounter() const {
+    return programCounter;
+}
+
 
 
 
