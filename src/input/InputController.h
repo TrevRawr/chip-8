@@ -1,20 +1,21 @@
-#ifndef CHIP_8_INPUT_H
-#define CHIP_8_INPUT_H
+#ifndef CHIP_8_INPUTCONTROLLER_H
+#define CHIP_8_INPUTCONTROLLER_H
 
 
-class InputController {
+#include "IInputController.h"
+
+class InputController : public IInputController {
 public:
-    static const int NUM_KEYS = 16;
     /**
      * @return whether or not the key at keyNumber is pressed. If keyNumber is larger than NUM_KEYS, returns false
      */
-    bool isKeyPressed(unsigned int keyNumber);
-    void checkForKeyPresses();
+    bool isKeyPressed(unsigned int keyNumber) override;
+    void checkForKeyPresses() override;
     /**
      * Blocks until the next keydown event occurs, and handles the next keydown event
      * @return the number of the key that was pressed
      */
-    uint8_t waitForKeyPress();
+    uint8_t waitForKeyPress() override;
 private:
     static const int ERROR_NO_INPUT_HANDLED = -1;
 
@@ -41,4 +42,4 @@ private:
 };
 
 
-#endif //CHIP_8_INPUT_H
+#endif //CHIP_8_INPUTCONTROLLER_H

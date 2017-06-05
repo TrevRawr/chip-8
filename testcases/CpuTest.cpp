@@ -9,6 +9,14 @@ void setOpcode(Memory* memory, uint16_t address, uint16_t opcode) {
     memory->setDataAtAddress(address + 1, (uint8_t) (opcode & OpcodeBitmasks::LAST_BYTE));
 }
 
+TEST_F(CpuTestFixture, ClearScreen) {
+    uint16_t clearScreenOpcode = 0x00E0;
+    setOpcode(memory, Constants::MEMORY_PROGRAM_START_LOCATION, clearScreenOpcode);
+
+    EXPECT_CALL(*display, clearScreen());
+    cpu->emulateCycle();
+}
+
 TEST_F (CpuTestFixture, JumpOpcode) {
     uint16_t expectedAddress = 0x205;
     uint16_t jumpToAddressOpcode = (uint16_t) (0x1000 | expectedAddress);

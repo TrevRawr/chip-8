@@ -6,12 +6,12 @@
 #include "../constants/OpcodeBitmasks.h"
 #include "../constants/Opcodes.h"
 #include "../exceptions/InstructionUnimplementedException.h"
-#include "../display/Display.h"
-#include "../input/InputController.h"
+#include "../display/IDisplay.h"
+#include "../input/IInputController.h"
 
 class Cpu {
 public:
-    Cpu(Memory &memory, Display &display, InputController &inputController);
+    Cpu(Memory &memory, IDisplay &display, IInputController &inputController);
 
     void emulateCycle();
 
@@ -33,8 +33,8 @@ private:
     uint8_t soundTimerRegister;
 
     Memory& memory;
-    Display& display;
-    InputController& inputController;
+    IDisplay& display;
+    IInputController& inputController;
 
     //this is not explicitly part of the chip-8 specification,
     //but will be required to keep track of the program counter

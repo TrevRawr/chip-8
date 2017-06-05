@@ -2,13 +2,16 @@
 #define CHIP_8_CPUTESTFIXTURE_H
 
 #include "gtest/gtest.h"
+#include "../src/storage/Memory.h"
 #include "../src/cpu/Cpu.h"
+#include "mocks/MockDisplay.h"
+#include "mocks/MockInputController.h"
 
 class CpuTestFixture : public ::testing::Test {
 protected:
     Memory * memory;
-    Display* display;
-    InputController* inputController;
+    MockDisplay* display;
+    MockInputController* inputController;
     Cpu* cpu;
     void SetUp() override;
 

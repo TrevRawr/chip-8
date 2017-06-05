@@ -2,31 +2,18 @@
 #define CHIP_8_DISPLAY_H
 
 #include <SDL.h>
+#include "IDisplay.h"
 
-class Display {
+class Display : public IDisplay {
 public:
-    static const int SPRITE_WIDTH = 8;
-
     Display();
-    virtual ~Display();
 
-    /**
-     * sets a pixel at the specified coordinate to on or off. If the pixel is unspecified, does nothing.
-     * updateScreen() must be called for this to take effect.
-     */
-    void setPixel(int x, int y, bool value);
+    ~Display() override;
 
-    /**
-     * @return true if the pixel is on, false otherwise. If the value of the pixel is out of screen bounds, return false
-     * updateScreen() must be called for this to take effect.
-     */
-    bool getPixel(int x, int y);
-    void clearScreen();
-
-    /**
-     * sets all the pixels on the screen that were set with setPixel()
-     */
-    void updateScreen();
+    void setPixel(int x, int y, bool value) override;
+    bool getPixel(int x, int y) override;
+    void clearScreen() override;
+    void updateScreen() override;
 
 private:
     static const int SCREEN_WIDTH = 64;

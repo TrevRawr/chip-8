@@ -3,8 +3,8 @@
 //TODO: use smart pointers?
 void CpuTestFixture::SetUp() {
     memory = new Memory();
-    display = new Display();
-    inputController = new InputController();
+    display = new MockDisplay();
+    inputController = new MockInputController();
     cpu = new Cpu(*memory, *display, *inputController);
 }
 

@@ -6,10 +6,4 @@ Setting Up Dependencies For Ubuntu:
 1. Install SDL2
 - sudo apt install libsdl2-dev
 
-2. Install Gtest
-- sudo apt install libgtest-dev
-- cd /usr/src/gtest/
-- sudo cmake .
-- sudo make
-- sudo mv libg* /usr/lib/
-
+GTest and GMock are dependencies that should be downloaded and configured automatically by the CMake build script

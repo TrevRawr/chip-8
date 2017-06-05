@@ -4,7 +4,7 @@
 #include "../constants/OpcodeBitshifts.h"
 #include "../utils/RandomUtil.h"
 
-Cpu::Cpu(Memory &memory, Display &display, InputController &inputController) : memory(memory), display(display), inputController(inputController) {
+Cpu::Cpu(Memory &memory, IDisplay &display, IInputController &inputController) : memory(memory), display(display), inputController(inputController) {
     programCounter = Constants::MEMORY_PROGRAM_START_LOCATION;
     indexRegister = 0;
     currStackLevel = 0;
@@ -12,9 +12,9 @@ Cpu::Cpu(Memory &memory, Display &display, InputController &inputController) : m
     for (int i = 0; i < NUM_GENERAL_PURPOSE_REGISTERS; i++) {
         generalPurposeRegisters[i] = 0;
     }
-    //TODO: figure out how to initialize these
-//    delayTimerRegister = 0;
-//    soundTimerRegister = 0;
+    
+    delayTimerRegister = 0;
+    soundTimerRegister = 0;
 }
 
 void Cpu::emulateCycle() {
@@ -270,7 +270,7 @@ void Cpu::executeDrawSpriteOpcode(uint16_t opcode) {
         //a bitmask that in binary looks like 10000000
         //we use this to read the values of the bits in the pixelRow from left to right
         uint8_t bitmask = 0x80;
-        for (int width = 0; width < Display::SPRITE_WIDTH; width++) {
+        for (int width = 0; width < IDisplay::SPRITE_WIDTH; width++) {
             //shift the bitmask over by one each iteration to evaluate the next bit of the pixelRow on the next loop iteration
             //ex: on the second iteration, (bitmask >> width) will be 01000000 and can be used to observe the value of the 2nd bit of the pixelRow
             //a non-zero value means the pixel must have been on
