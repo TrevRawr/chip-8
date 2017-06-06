@@ -7,15 +7,17 @@
 #include "mocks/MockDisplay.h"
 #include "mocks/MockInputController.h"
 
+using ::testing::NiceMock;
+
 class CpuTestFixture : public ::testing::Test {
 protected:
-    Memory * memory;
-    MockDisplay* display;
-    MockInputController* inputController;
-    Cpu* cpu;
-    void SetUp() override;
+    CpuTestFixture();
 
-    void TearDown() override;
+protected:
+    Memory memory;
+    MockDisplay display;
+    MockInputController inputController;
+    Cpu cpu;
 };
 
 

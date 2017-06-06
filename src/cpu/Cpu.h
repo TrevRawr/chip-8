@@ -11,14 +11,16 @@
 
 class Cpu {
 public:
+    static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
+
     Cpu(Memory &memory, IDisplay &display, IInputController &inputController);
 
     void emulateCycle();
 
     uint16_t getProgramCounter() const;
+    uint8_t getRegisterValue(unsigned int registerNumber) const;
 
 private:
-    static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
     //this includes the "carry-flag" register VF
     static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
     static const int INDEX_CARRY_REGISTER = 15;
@@ -71,7 +73,7 @@ private:
     void executeRegisterNotEqualsValueOpcode(uint16_t opcode);
 
     //0x5XY0
-    void executeValueEqualsValueOpcode(uint16_t opcode);
+    void executeRegisterEqualsRegisterOpcode(uint16_t opcode);
 
     //0x6XNN
     void executeAssignRegisterOpcode(uint16_t opcode);
@@ -160,7 +162,7 @@ private:
     OpcodeMemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
         &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
         &Cpu::executeRegisterEqualsValueOpcode,
-        &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeValueEqualsValueOpcode, &Cpu::executeAssignRegisterOpcode,
+        &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeRegisterEqualsRegisterOpcode, &Cpu::executeAssignRegisterOpcode,
         &Cpu::executeAddToRegisterOpcode,
         &Cpu::delegateToArithmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
         &Cpu::executeJumpToAddressPlusRegisterOpcode,
