@@ -203,7 +203,7 @@ void Cpu::setSubtractionXYOverflowRegisters(int registerNumberX, int registerNum
 
 void Cpu::executeArithmeticShiftRightOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
-    generalPurposeRegisters[INDEX_CARRY_REGISTER] = (uint8_t) (opcode & OpcodeBitmasks::LAST_BIT);
+    generalPurposeRegisters[INDEX_CARRY_REGISTER] = (uint8_t) (generalPurposeRegisters[registerNumberX] & OpcodeBitmasks::LAST_BIT);
     generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] >> 1;
 }
 
@@ -216,16 +216,16 @@ void Cpu::executeArithmeticSubtractDifferenceOpcode(uint16_t opcode) {
 
 void Cpu::setSubtractionYXOverflowRegisters(int registerNumberX, int registerNumberY) {
     if (generalPurposeRegisters[registerNumberY] - generalPurposeRegisters[registerNumberX] < 0) {
-        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
-    } else {
         generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
     }
 }
 
 void Cpu::executeArithmeticShiftLeftOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
     generalPurposeRegisters[INDEX_CARRY_REGISTER] =
-            (uint8_t) ((generalPurposeRegisters[registerNumberX] & OpcodeBitmasks::FIRST_BIT) >> OpcodeBitshifts::BIT_FIRST_TO_LAST);
+            (uint8_t) ((generalPurposeRegisters[registerNumberX] & BITMASK_REGISTER_FIRST_BIT) >> BITSHIFT_REGISTER_FIRST_TO_LAST);
     generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] << 1;
 }
 

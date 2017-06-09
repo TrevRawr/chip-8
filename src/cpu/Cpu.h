@@ -11,6 +11,7 @@
 
 class Cpu {
 public:
+    static const int INDEX_CARRY_REGISTER = 15;
     static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
 
     Cpu(Memory &memory, IDisplay &display, IInputController &inputController);
@@ -23,10 +24,11 @@ public:
 private:
     //this includes the "carry-flag" register VF
     static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
-    static const int INDEX_CARRY_REGISTER = 15;
     static const int NUM_STACK_LEVELS = 16;
     static const int NUM_OP_CODE_IMPLEMENTATIONS = 16;
     static const int NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS = 16;
+    static const uint8_t BITMASK_REGISTER_FIRST_BIT = 0x80;
+    static const uint8_t BITSHIFT_REGISTER_FIRST_TO_LAST = 7;
 
     uint8_t generalPurposeRegisters[NUM_GENERAL_PURPOSE_REGISTERS];
     uint16_t indexRegister;
