@@ -19,8 +19,6 @@ Cpu::Cpu(Memory &memory, IDisplay &display, IInputController &inputController) :
 }
 
 void Cpu::emulateCycle() {
-    //TODO: change delay to actual processor clock rate
-    SDL_Delay(1);
     updateTimers();
     uint16_t opcode = fetchOpCode();
 
@@ -374,10 +372,8 @@ void Cpu::executeAddRegisterToIndexRegisterOpcode(uint16_t opcode) {
     int registerNumber = getSecondNibbleFromOpcode(opcode);
     setIndexOverflowRegister(registerNumber);
     indexRegister += generalPurposeRegisters[registerNumber];
-    //TODO: make sure this behaves correctly*************************************
-    if (indexRegister > Constants::MAX_INDEX_REGISTER_VALUE) {
-        indexRegister -= Constants::MAX_INDEX_REGISTER_VALUE;
-    }
+    //constrains the range to MAX_REGISTER_VALUE and makes numbers higher than this "loop" around
+    indexRegister %= Constants::MAX_INDEX_REGISTER_VALUE + 1;
 }
 
 void Cpu::setIndexOverflowRegister(int registerNumber) {
@@ -447,6 +443,18 @@ uint8_t Cpu::getRegisterValue(unsigned int registerNumber) const {
         throw IndexOutOfBoundsException("Register Number out of bounds");
     }
     return generalPurposeRegisters[registerNumber];
+}
+
+uint16_t Cpu::getIndexRegisterValue() const {
+    return indexRegister;
+}
+
+uint8_t Cpu::getDelayTimerValue() const {
+    return delayTimerRegister;
+}
+
+uint8_t Cpu::getSoundTimerValue() const {
+    return soundTimerRegister;
 }
 
 

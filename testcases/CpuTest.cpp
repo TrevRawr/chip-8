@@ -3,6 +3,9 @@
 #include "../src/constants/Constants.h"
 #include "../src/constants/OpcodeBitshifts.h"
 #include "../src/exceptions/IndexOutOfBoundsException.h"
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Return;
 
 void setOpcode(Memory& memory, uint16_t address, uint16_t opcode) {
     memory.setDataAtAddress(address, (uint8_t) ((opcode & OpcodeBitmasks::FIRST_BYTE) >> OpcodeBitshifts::NIBBLE_TWO));
@@ -201,8 +204,9 @@ void testArithmeticOperator(Memory &memory, Cpu &cpu, uint8_t valueX, uint8_t va
     setRegister(memory, cpu, registerNumberY, valueY);
     uint16_t setRegisterOrOpcode = (uint16_t)
             ((8 << OpcodeBitshifts::NIBBLE_THREE) |
-             (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
-             (registerNumberY << OpcodeBitshifts::NIBBLE) | opcodeArithmeticOperationNumber);
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            (registerNumberY << OpcodeBitshifts::NIBBLE) |
+            opcodeArithmeticOperationNumber);
     executeOpcode(memory, cpu, setRegisterOrOpcode);
     EXPECT_EQ(expectedOutput, cpu.getRegisterValue(registerNumberX));
 }
@@ -344,4 +348,320 @@ TEST_F(CpuTestFixture, shiftRegisterLeftOneShiftedOut) {
     testArithmeticOperator(memory, cpu, valueX, 0, expectedOutput, opcodeArithmeticOperationNumber);
     uint8_t expectedShiftedOutBit = 1;
     EXPECT_EQ(expectedShiftedOutBit, cpu.getRegisterValue(Cpu::INDEX_CARRY_REGISTER));
+}
+
+//0x9XY0
+TEST_F(CpuTestFixture, skipRegistersNotEqual) {
+    //test instruction skipped
+    unsigned int registerNumberX = 0;
+    unsigned int registerNumberY = 1;
+    uint8_t registerValueX = 1;
+    uint8_t registerValueY = 0;
+    setRegister(memory, cpu, registerNumberX, registerValueX);
+    setRegister(memory, cpu, registerNumberY, registerValueY);
+    uint16_t skipRegistersNotEqualOpcode = (uint16_t)
+            ((9 << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            (registerNumberY << OpcodeBitshifts::NIBBLE));
+    setOpcode(memory, cpu.getProgramCounter(), skipRegistersNotEqualOpcode);
+    expectInstructionSkipped(cpu);
+
+    //test instruction not skipped
+    uint8_t newRegisterValueX = registerValueY;
+    setRegister(memory, cpu, registerNumberX, newRegisterValueX);
+    setOpcode(memory, cpu.getProgramCounter(), skipRegistersNotEqualOpcode);
+    expectInstructionNotSkipped(cpu);
+}
+
+//0xANNN
+TEST_F(CpuTestFixture, setIndexRegister) {
+    uint16_t indexRegisterValue = 0xFFF;
+    uint16_t setIndexRegisterOpcode = (uint16_t) ((0xA << OpcodeBitshifts::NIBBLE_THREE) | indexRegisterValue);
+    executeOpcode(memory, cpu, setIndexRegisterOpcode);
+    EXPECT_EQ(indexRegisterValue, cpu.getIndexRegisterValue());
+}
+
+//0xBNNN
+TEST_F(CpuTestFixture, jumpToAddressPlusRegisterZero) {
+    uint16_t baseAddress = 0x300;
+    uint8_t registerValue = 0xFF;
+    unsigned int registerNumber = 0;
+    setRegister(memory, cpu, registerNumber, registerValue);
+    uint16_t jumpToAddressPlusRegisterOpcode = (uint16_t) ((0xB << OpcodeBitshifts::NIBBLE_THREE) | baseAddress);
+    executeOpcode(memory, cpu, jumpToAddressPlusRegisterOpcode);
+    EXPECT_EQ(baseAddress + registerValue, cpu.getProgramCounter());
+
+    //TODO: see what's supposed to happen if the opcode goes over the allowed address range. Is the program counter supposed to overflow and reset?
+}
+
+//0xCXNN
+TEST_F(CpuTestFixture, randomNumber) {
+    //TODO: research a good way to test functions with random numbers
+    EXPECT_EQ(true, true);
+}
+
+//0xDXYN
+TEST_F(CpuTestFixture, DrawSprite) {
+    //5 is the sprite height of the default font loaded into memory
+    unsigned int spriteHeight = 5;
+    unsigned int spriteCoordinateX = 6;
+    unsigned int spriteCoordinateY = 7;
+    uint16_t drawSpriteOpcode = (uint16_t)
+            ((0xD << OpcodeBitshifts::NIBBLE_THREE) |
+            (spriteCoordinateX << OpcodeBitshifts::NIBBLE_TWO) |
+            (spriteCoordinateY << OpcodeBitshifts::NIBBLE) |
+            spriteHeight);
+    uint16_t spriteLocation = Constants::MEMORY_FONT_START_LOCATION;
+    uint16_t setIndexRegisterOpcode = (uint16_t) ((0xA << OpcodeBitshifts::NIBBLE_THREE) | spriteLocation);
+
+    //set the index register to the location of the alphabet letter A sprite
+    executeOpcode(memory, cpu, setIndexRegisterOpcode);
+
+    //Check that the right amount of calls were made to setPixel()
+    //TODO: assert more conditions such as that the correct sprite coordinates and values were set
+    EXPECT_CALL(display, setPixel(_, _, _)).Times(spriteHeight * IDisplay::SPRITE_WIDTH);
+    EXPECT_CALL(display, getPixel(_, _)).Times(AtLeast(1));
+    executeOpcode(memory, cpu, drawSpriteOpcode);
+
+    //Since the display was blank originally, no pixels should be switched off
+    EXPECT_EQ(0, cpu.getRegisterValue(Cpu::INDEX_CARRY_REGISTER));
+}
+
+//0xEX9E
+TEST_F(CpuTestFixture, skipOnKeyPressed) {
+    unsigned int registerNumberX = 0;
+    uint8_t buttonNumber = 0;
+    uint16_t skipOnKeyPressedOpcode = (uint16_t)
+            ((0xE << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            0x9E);
+    setRegister(memory, cpu, registerNumberX, buttonNumber);
+
+    //should return true for first call (in expectInstructionSkipped)
+    //and false for the second call (in expectInstructionNotSkipped)
+    EXPECT_CALL(inputController, isKeyPressed(buttonNumber))
+            .WillOnce(Return(true))
+            .WillOnce(Return(false));
+
+    setOpcode(memory, cpu.getProgramCounter(), skipOnKeyPressedOpcode);
+    expectInstructionSkipped(cpu);
+
+    setOpcode(memory, cpu.getProgramCounter(), skipOnKeyPressedOpcode);
+    expectInstructionNotSkipped(cpu);
+}
+
+//0xEXA1
+TEST_F(CpuTestFixture, skipOnKeyNotPressed) {
+    unsigned int registerNumberX = 0;
+    uint8_t buttonNumber = 0;
+    uint16_t skipOnKeyNotPressedOpcode = (uint16_t)
+            ((0xE << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            (0xA1));
+    setRegister(memory, cpu, registerNumberX, buttonNumber);
+
+    EXPECT_CALL(inputController, isKeyPressed(buttonNumber))
+                .WillOnce(Return(false))
+                .WillOnce(Return(true));
+
+    setOpcode(memory, cpu.getProgramCounter(), skipOnKeyNotPressedOpcode);
+    expectInstructionSkipped(cpu);
+
+    setOpcode(memory, cpu.getProgramCounter(), skipOnKeyNotPressedOpcode);
+    expectInstructionNotSkipped(cpu);
+}
+
+//0xFX07
+TEST_F(CpuTestFixture, setRegisterToDelayTimer) {
+    unsigned int registerNumberX = 0;
+    uint8_t delayTimerValue = 0;
+    uint16_t setRegisterToDelayTimerOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            0x07);
+    executeOpcode(memory, cpu, setRegisterToDelayTimerOpcode);
+    EXPECT_EQ(delayTimerValue, cpu.getRegisterValue(registerNumberX));
+}
+
+//0xFX0A
+TEST_F(CpuTestFixture, waitForKeyPress) {
+    unsigned int registerNumberX = 0;
+    uint8_t keyPressed = 5;
+    EXPECT_CALL(inputController, waitForKeyPress())
+            .WillOnce(Return(keyPressed));
+    uint16_t waitForKeyPressOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            0x0A);
+    executeOpcode(memory, cpu, waitForKeyPressOpcode);
+    EXPECT_EQ(keyPressed, cpu.getRegisterValue(registerNumberX));
+}
+
+//0xFX15
+TEST_F(CpuTestFixture, setDelayTimer) {
+    unsigned int registerNumberX = 0;
+    uint8_t delay = 0x80;
+    uint16_t setDelayTimerOpcode =
+            (uint16_t) ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            0x15);
+    setRegister(memory, cpu, registerNumberX, delay);
+    executeOpcode(memory, cpu, setDelayTimerOpcode);
+    EXPECT_EQ(delay, cpu.getDelayTimerValue());
+}
+
+//0xFX18
+TEST_F(CpuTestFixture, setSoundTimer) {
+    unsigned int registerNumberX = 0;
+    uint8_t sound = 0x90;
+    uint16_t setSoundTimerOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            0x18);
+    setRegister(memory, cpu, registerNumberX, sound);
+    executeOpcode(memory, cpu, setSoundTimerOpcode);
+    EXPECT_EQ(sound, cpu.getSoundTimerValue());
+}
+
+//0xFX1E
+TEST_F(CpuTestFixture, incrementIndexRegister) {
+    unsigned int registerNumberX = 0;
+    uint8_t incrementAmount = 255;
+    uint16_t incrementIndexRegisterOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            0x1E);
+    setRegister(memory, cpu, registerNumberX, incrementAmount);
+
+    //increment once
+    executeOpcode(memory, cpu, incrementIndexRegisterOpcode);
+    EXPECT_EQ(incrementAmount, cpu.getIndexRegisterValue());
+    EXPECT_EQ(0, cpu.getRegisterValue(Cpu::INDEX_CARRY_REGISTER));
+
+    //increment once again to ensure it's incrementing and not just setting the value of the register
+    executeOpcode(memory, cpu, incrementIndexRegisterOpcode);
+    EXPECT_EQ(incrementAmount + incrementAmount, cpu.getIndexRegisterValue());
+    EXPECT_EQ(0, cpu.getRegisterValue(Cpu::INDEX_CARRY_REGISTER));
+}
+
+TEST_F(CpuTestFixture, incrementIndexRegisterOverflow) {
+    uint16_t maxIndexRegisterValue = 0xFFF;
+    uint16_t setIndexRegisterOpcode = (uint16_t) ((0xA << OpcodeBitshifts::NIBBLE_THREE) | maxIndexRegisterValue);
+    executeOpcode(memory, cpu, setIndexRegisterOpcode);
+
+    unsigned int registerNumberX = 0;
+    uint8_t incrementAmount = 10;
+    setRegister(memory, cpu, registerNumberX, incrementAmount);
+
+    uint16_t incrementIndexRegisterOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+             (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+             0x1E);
+    executeOpcode(memory, cpu, incrementIndexRegisterOpcode);
+    EXPECT_EQ(incrementAmount - 1, cpu.getIndexRegisterValue());
+    EXPECT_EQ(1, cpu.getRegisterValue(Cpu::INDEX_CARRY_REGISTER));
+}
+
+//0xFX29
+TEST_F(CpuTestFixture, setIndexToSpriteLocation) {
+    int registerNumberX = 0;
+    int maxEightBitIntValue = 255;
+    for (uint8_t i = 0; i < maxEightBitIntValue; i++) {
+        uint16_t setIndexToSpriteLocationOpcode = (uint16_t)
+                ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+                (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+                0x29);
+        setRegister(memory, cpu, registerNumberX, i);
+        executeOpcode(memory, cpu, setIndexToSpriteLocationOpcode);
+        EXPECT_EQ(Constants::MEMORY_FONT_START_LOCATION + i * Constants::FONT_NUM_BYTES_PER_CHARACTER, cpu.getIndexRegisterValue());
+    }
+}
+
+//0xFX33
+TEST_F(CpuTestFixture, convertToBcd) {
+    int registerNumberX = 0;
+    uint8_t registerValue = 255;
+    uint8_t expectedDigit1 = 2;
+    uint8_t expectedDigit2 = 5;
+    uint8_t expectedDigit3 = 5;
+    setRegister(memory, cpu, registerNumberX, registerValue);
+    uint16_t convertToBcdOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+            (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+            (0x33));
+    executeOpcode(memory, cpu, convertToBcdOpcode);
+    EXPECT_EQ(expectedDigit1, memory.getDataAtAddress(cpu.getIndexRegisterValue()));
+    EXPECT_EQ(expectedDigit2, memory.getDataAtAddress(cpu.getIndexRegisterValue() + 1));
+    EXPECT_EQ(expectedDigit3, memory.getDataAtAddress(cpu.getIndexRegisterValue() + 2));
+}
+
+void testRegisterDump(Memory& memory, Cpu& cpu, unsigned int numRegisters) {
+    for (uint8_t registerNumber = 0; registerNumber < numRegisters; registerNumber++) {
+        //store numbers equal to the number of the register in each register
+        setRegister(memory, cpu, registerNumber, registerNumber);
+    }
+    int registerNumberX = numRegisters - 1;
+    uint16_t registerDumpOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+             (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+             0x55);
+    executeOpcode(memory, cpu, registerDumpOpcode);
+
+    //check all memory addresses corresponding to all registers even if numRegisters is less than the number of registers
+    //in the cpu. This way, the test verifies that addresses that shouldn't have been dumped are not dumped.
+    for (unsigned int i = 0; i < Cpu::NUM_GENERAL_PURPOSE_REGISTERS; i++) {
+        if (i < numRegisters) {
+            EXPECT_EQ(i, memory.getDataAtAddress(cpu.getIndexRegisterValue() + i));
+        } else {
+            //this assumes the value in memory was zeroed out before executing
+            EXPECT_EQ(0, memory.getDataAtAddress(cpu.getIndexRegisterValue() + i));
+        }
+    }
+}
+
+//0xFX55
+TEST_F(CpuTestFixture, registerDump) {
+    //zero out the memory addresses relevant to this test to ensure the tests work properly
+    for (unsigned int i = 0; i < Cpu::NUM_GENERAL_PURPOSE_REGISTERS; i++) {
+        memory.setDataAtAddress(cpu.getIndexRegisterValue() + i, 0);
+    }
+    //test dumping 1 register then 2 registers and so on up until dumping all registers
+    //ideally, these should be separate test cases to reset memory between iterations in case the memory ever gets some
+    //weird values set in it from one iteration, but it's easier to implement like this, and the scope of the test isn't that large
+    for (unsigned int numRegisters = 1; numRegisters < Cpu::NUM_GENERAL_PURPOSE_REGISTERS; numRegisters++) {
+        testRegisterDump(memory, cpu, numRegisters);
+    }
+}
+
+void testRegisterLoad(Memory& memory, Cpu& cpu, unsigned int numRegisters) {
+    for (unsigned int memoryValue = 0; memoryValue < numRegisters; memoryValue++) {
+        memory.setDataAtAddress(cpu.getIndexRegisterValue() + memoryValue, (uint8_t) memoryValue);
+    }
+
+    int registerNumberX = numRegisters - 1;
+    uint16_t registerLoadOpcode = (uint16_t)
+            ((0xF << OpcodeBitshifts::NIBBLE_THREE) |
+             (registerNumberX << OpcodeBitshifts::NIBBLE_TWO) |
+             0x65);
+    executeOpcode(memory, cpu, registerLoadOpcode);
+
+    //check all registers even if numRegisters is less than the number of registers in the cpu to ensure that registers
+    //that shouldn't be loaded are not loaded
+    for (unsigned int i = 0; i < Cpu::NUM_GENERAL_PURPOSE_REGISTERS; i++) {
+        if (i < numRegisters) {
+            EXPECT_EQ(i, cpu.getRegisterValue(i));
+        } else {
+            //this assumes the original value in registers is set to zero
+            EXPECT_EQ(0, cpu.getRegisterValue(i));
+        }
+    }
+}
+
+//0xFX65
+TEST_F(CpuTestFixture, registerLoad) {
+    //similar to registerDump, these should probably be separate test cases to reset registers and memory between test iterations,
+    //but it's easier to implement this way and okay for this small test's scope
+    for (unsigned int numRegisters = 1; numRegisters < Cpu::NUM_GENERAL_PURPOSE_REGISTERS; numRegisters++) {
+        testRegisterLoad(memory, cpu, numRegisters);
+    }
 }

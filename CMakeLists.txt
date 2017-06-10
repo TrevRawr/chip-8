@@ -51,6 +51,7 @@ set_target_properties(libgmock PROPERTIES
 include_directories("${source_dir}/googletest/include"
         "${source_dir}/googlemock/include")
 
+#TODO: remove dependency on SDL2_LIBRARIES from testcases
 add_executable(testcases testcases/CpuTest.cpp testcases/CpuTestFixture.cpp testcases/CpuTestFixture.h ${SOURCE_FILES} testcases/main.cpp testcases/mocks/MockDisplay.h testcases/mocks/MockInputController.h)
 target_link_libraries(testcases libgtest libgmock ${SDL2_LIBRARIES})
 add_test(AllTestsInFoo testcases)

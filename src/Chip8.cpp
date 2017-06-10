@@ -8,6 +8,8 @@ void Chip8::beginEmulation() {
     isEmulating = true;
     while (isEmulating) {
         inputController.checkForKeyPresses();
+        //TODO: change delay to actual processor clock rate
+        SDL_Delay(1);
         cpu.emulateCycle();
     }
 }
