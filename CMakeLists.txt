@@ -6,14 +6,16 @@ set(CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra")
 
 #Setup main emulator executable
-set(SOURCE_FILES src/cpu/Cpu.cpp src/cpu/Cpu.h src/display/Display.cpp src/display/Display.h src/display/IDisplay.h src/Chip8.cpp src/Chip8.h src/input/IInputController.h src/storage/Memory.cpp src/storage/Memory.h src/exceptions/IndexOutOfBoundsException.h src/constants/Constants.h src/exceptions/InstructionUnimplementedException.h src/exceptions/BaseException.h src/constants/OpcodeBitmasks.h src/constants/Opcodes.h src/exceptions/UnimplementedException.h src/constants/OpcodeBitshifts.h src/utils/RandomUtil.cpp src/utils/RandomUtil.h src/io/FileByteReader.cpp src/io/FileByteReader.h src/exceptions/IOException.h src/input/InputController.cpp src/input/InputController.h)
-add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES})
+set(SOURCE_FILES src/cpu/Cpu.cpp src/cpu/Cpu.h src/display/IDisplay.h src/input/IInputController.h src/storage/Memory.cpp src/storage/Memory.h src/exceptions/IndexOutOfBoundsException.h src/constants/Constants.h src/exceptions/InstructionUnimplementedException.h src/exceptions/BaseException.h src/constants/OpcodeBitmasks.h src/constants/Opcodes.h src/exceptions/UnimplementedException.h src/constants/OpcodeBitshifts.h src/utils/RandomUtil.cpp src/utils/RandomUtil.h src/io/FileByteReader.cpp src/io/FileByteReader.h src/exceptions/IOException.h)
+#keep source files that are dependent on SDL library separate in order to exclude from testcases build (and possibly other builds in the future).
+set(SDL_SOURCE_FILES src/Chip8.cpp src/Chip8.h src/display/Display.cpp src/display/Display.h src/input/InputController.cpp src/input/InputController.h)
+add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${SDL_SOURCE_FILES})
 
 #Setup SDL2 Library dependencies
-INCLUDE(FindPkgConfig)
-PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
-INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${SDL2_LIBRARIES})
+include(FindPkgConfig)
+pkg_search_module(SDL2 REQUIRED sdl2)
+include_directories(${SDL2_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
 
 #Setup testing with GTest and GMock libraries
 #big thanks to http://www.kaizou.org/2014/11/gtest-cmake/ for helping me get this set up
@@ -30,7 +32,7 @@ ExternalProject_Add(
         INSTALL_COMMAND ""
 )
 # Get GTest source and binary directories from CMake project
-ExternalProject_Get_Property(gtest source_dir binary_dir)
+externalProject_get_property(gtest source_dir binary_dir)
 # Create a libgtest target to be used as a dependency by test programs
 add_library(libgtest IMPORTED STATIC GLOBAL)
 # Set libgtest properties
@@ -47,11 +49,12 @@ set_target_properties(libgmock PROPERTIES
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
         )
 # Set include directories
-#TODO: try using INTERFACE_INCLUDE_DIRECTORIES?
 include_directories("${source_dir}/googletest/include"
         "${source_dir}/googlemock/include")
 
-#TODO: remove dependency on SDL2_LIBRARIES from testcases
-add_executable(testcases testcases/CpuTest.cpp testcases/CpuTestFixture.cpp testcases/CpuTestFixture.h ${SOURCE_FILES} testcases/main.cpp testcases/mocks/MockDisplay.h testcases/mocks/MockInputController.h)
-target_link_libraries(testcases libgtest libgmock ${SDL2_LIBRARIES})
-add_test(AllTestsInFoo testcases)
+#add_test allows you to execute test cases using "make test" i.e. the test target in the generated Makefile.
+#running this target only works from inside the build folder (Otherwise, there's no Makefile!)
+set(TESTING_SOURCE_FILES testcases/CpuTest.cpp testcases/CpuTestFixture.cpp testcases/CpuTestFixture.h ${SOURCE_FILES} testcases/main.cpp testcases/mocks/MockDisplay.h testcases/mocks/MockInputController.h)
+add_executable(testcases ${TESTING_SOURCE_FILES})
+target_link_libraries(testcases libgtest libgmock)
+add_test(EmulatorTests testcases)
