@@ -4,6 +4,11 @@
 #include <SDL.h>
 #include "IDisplay.h"
 
+/**
+ * A (very) simple IDisplay implementation using SDL. At the moment, this creates a very small window (because the chip-8's screen resolution is small)
+ * Ideally, this class should scale the size of a chip-8 pixel up to be larger than a pixel on the physical screen the emulator
+ * renders on (which is hopefully larger than the chip-8's screen).
+ */
 class Display : public IDisplay {
 public:
     Display();

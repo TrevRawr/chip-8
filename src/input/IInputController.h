@@ -1,7 +1,11 @@
 #ifndef CHIP_8_IINPUTCONTROLLER_H
 #define CHIP_8_IINPUTCONTROLLER_H
 
-
+/**
+ * An interface that must be implemented in order for the chip-8 emulator to support user input
+ * The interface is pretty generic and simple, so it be easily implementable by just about any platform.
+ * In addition, this interface can be mocked out in testing where applicable in order to test any classes that use it as a dependency.
+ */
 class IInputController {
 public:
     static const int NUM_KEYS = 16;

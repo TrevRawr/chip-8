@@ -3,6 +3,11 @@
 
 #include <SDL.h>
 
+/**
+ * An interface that must be implemented in order to allow the chip-8 emulator to draw any output onto the screen
+ * The interface is fairly simple, allowing just about any platform to implement it as necessary, hopefully simplifying cross-platform development.
+ * Another benefit of having an interface is that the display dependency can be mocked out in unit tests where applicable, in order to test dependent code.
+ */
 class IDisplay {
 public:
     static const int SPRITE_WIDTH = 8;

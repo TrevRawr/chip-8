@@ -4,6 +4,10 @@
 #include <exception>
 #include <string>
 
+/**
+ * The standard application that every other exception in the application derives from.
+ * It supports passing in a string to the constructor as an error message to be displayed on failure.
+ */
 class BaseException : public std::exception {
 public:
     BaseException(const std::string &message) : message(message) {};

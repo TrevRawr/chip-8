@@ -7,6 +7,13 @@
 #include "input/InputController.h"
 #include <string>
 
+/**
+ * The "composer" of the chip-8 emulator that takes all the different components of the emulator and orchestrates them together.
+ * This class provides a nice abstraction of the chip-8 system as a whole, and if this project was ever to be used as a library for another project,
+ * this would likely be the API that would be exposed to external projects.
+ * Currently, this class basically instantiates all necessary dependencies, but in the future, if there are multiple implementations of certain dependencies
+ * (ex: IDisplay), then these may need to be injected through the constructor.
+ */
 class Chip8 {
 public:
     Chip8();

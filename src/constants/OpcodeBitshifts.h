@@ -1,6 +1,9 @@
 #ifndef CHIP_8_OPCODEBITSHIFTS_H
 #define CHIP_8_OPCODEBITSHIFTS_H
 
+/**
+ * Bit shift amounts used to help access data stored in opcodes.
+ */
 class OpcodeBitshifts {
 public:
     //a nibble is half a byte (4 bits). Since opcodes are 16 bits, shifting a nibble by 12 will position it

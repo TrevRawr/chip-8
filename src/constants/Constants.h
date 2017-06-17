@@ -1,5 +1,9 @@
 #ifndef CHIP_8_CONSTANTS_H
 #define CHIP_8_CONSTANTS_H
+
+/**
+ * A place to store global constants accessible by anything.
+ */
 class Constants {
 public:
     static const int BITS_IN_BYTE = 8;

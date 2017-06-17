@@ -9,6 +9,11 @@
 #include "../display/IDisplay.h"
 #include "../input/IInputController.h"
 
+/**
+ * The cpu is the heart of the emulator, and implements every opcode in the chip-8 specification
+ * It executes opcodes, keeps track of and updates the chip-8 system state accordingly, and calls functionality where necessary of other components
+ * (ex: IDisplay) that are passed in as dependencies.
+ */
 class Cpu {
 public:
     static const int INDEX_CARRY_REGISTER = 15;

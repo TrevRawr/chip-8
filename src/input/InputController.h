@@ -4,6 +4,10 @@
 
 #include "IInputController.h"
 
+/**
+ * An implementation of IInputController using SDL. This is a fairly simple implementation
+ * that doesn't do too much beyond mapping chip-8 input to a few keyboard keys.
+ */
 class InputController : public IInputController {
 public:
     /**

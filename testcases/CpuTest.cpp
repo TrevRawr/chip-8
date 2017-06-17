@@ -7,6 +7,11 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Return;
 
+/**
+ * A set of testcases for testing every chip-8 cpu opcode
+ * Corresponding opcodes to testcases are commented on top of testcases. If a testcase doesn't have an opcode commented on it,
+ * assume that it corresponds to the most recently read opcode comment
+ */
 void setOpcode(Memory& memory, uint16_t address, uint16_t opcode) {
     memory.setDataAtAddress(address, (uint8_t) ((opcode & OpcodeBitmasks::FIRST_BYTE) >> OpcodeBitshifts::NIBBLE_TWO));
     memory.setDataAtAddress(address + 1, (uint8_t) (opcode & OpcodeBitmasks::LAST_BYTE));

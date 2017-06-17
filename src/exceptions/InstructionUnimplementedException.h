@@ -5,6 +5,9 @@
 #include <exception>
 #include "UnimplementedException.h"
 
+/**
+ * An exception thrown by opcode (instructions) implementations that are not yet (or won't be) implemented.
+ */
 class InstructionUnimplementedException : public UnimplementedException {
 public:
     InstructionUnimplementedException(const std::string &message) : UnimplementedException(message) {}

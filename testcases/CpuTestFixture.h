@@ -7,13 +7,14 @@
 #include "mocks/MockDisplay.h"
 #include "mocks/MockInputController.h"
 
-using ::testing::NiceMock;
-
+/**
+ * A Test fixture for initializing a fresh cpu instance (along with its mocked out dependencies) for each test case
+ * in order to achieve isolated unit tests.
+ */
 class CpuTestFixture : public ::testing::Test {
 protected:
     CpuTestFixture();
 
-protected:
     Memory memory;
     MockDisplay display;
     MockInputController inputController;

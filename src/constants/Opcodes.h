@@ -3,6 +3,10 @@
 
 #include <cstdint>
 
+/**
+ * Constants that identify opcodes. Note that these constants don't contain the entire opcode, just enough information to uniquely identify them
+ * There is also not an entry for every opcode. Entries here are added as they are needed to implement things elsewhere.
+ */
 class Opcodes {
 public:
     static const uint16_t CLEAR_DISPLAY = 0x00E0;

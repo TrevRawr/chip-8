@@ -5,6 +5,9 @@
 #include "../../src/display/IDisplay.h"
 #include "gmock/gmock.h"
 
+/**
+ * A Google Mock implementation of IDisplay for testing purposes.
+ */
 class MockDisplay : public IDisplay {
 public:
     MOCK_METHOD3(setPixel, void(int x, int y, bool value));
