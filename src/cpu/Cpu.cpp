@@ -32,7 +32,6 @@ void Cpu::emulateCycle() {
     programCounter += DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE;
 
     decodeAndExecuteOpcode(opcode);
-    display.updateScreen();
 }
 
 uint16_t Cpu::fetchOpCode() {
@@ -65,6 +64,7 @@ void Cpu::executeOpcodeBeginningWithZero(uint16_t opcode) {
     switch (opcode) {
         case Opcodes::CLEAR_DISPLAY:
             display.clearScreen();
+            display.updateScreen();
             return;
         case Opcodes::RETURN_FROM_SUBROUTINE:
             executeReturnFromSubroutineOpcode();
@@ -291,6 +291,7 @@ void Cpu::executeDrawSpriteOpcode(uint16_t opcode) {
             }
         }
     }
+    display.updateScreen();
 }
 
 void Cpu::executeKeyPressedSkipOpcodes(uint16_t opcode) {

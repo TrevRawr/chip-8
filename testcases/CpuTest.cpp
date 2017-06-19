@@ -23,6 +23,7 @@ TEST_F(CpuTestFixture, ClearScreen) {
     setOpcode(memory, Constants::MEMORY_PROGRAM_START_LOCATION, clearScreenOpcode);
 
     EXPECT_CALL(display, clearScreen());
+    EXPECT_CALL(display, updateScreen());
     cpu.emulateCycle();
 }
 
@@ -426,6 +427,7 @@ TEST_F(CpuTestFixture, DrawSprite) {
     //TODO: assert more conditions such as that the correct sprite coordinates and values were set
     EXPECT_CALL(display, setPixel(_, _, _)).Times(spriteHeight * IDisplay::SPRITE_WIDTH);
     EXPECT_CALL(display, getPixel(_, _)).Times(AtLeast(1));
+    EXPECT_CALL(display, updateScreen());
     executeOpcode(memory, cpu, drawSpriteOpcode);
 
     //Since the display was blank originally, no pixels should be switched off

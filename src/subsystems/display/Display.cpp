@@ -26,7 +26,7 @@ int Display::getPixelIndex(int x, int y) const {
 }
 
 bool Display::isPixelInBounds(int x, int y) {
-    return !(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT);
+    return !(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT || x < 0 || y < 0);
 }
 
 void throwSdlError(std::string errorMessage) {
