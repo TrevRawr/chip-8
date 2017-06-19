@@ -9,9 +9,9 @@
  */
 namespace Chip8 {
 class IndexOutOfBoundsException : public BaseException {
-public:
+   public:
     IndexOutOfBoundsException(const std::string &message) : BaseException(message) {}
 };
 }
 
-#endif //CHIP_8_INDEXOUTOFBOUNDSEXCEPTION_H
+#endif  // CHIP_8_INDEXOUTOFBOUNDSEXCEPTION_H

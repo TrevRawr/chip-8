@@ -1,7 +1,6 @@
 #ifndef CHIP_8_SDLSUBSYSTEMMANAGER_H
 #define CHIP_8_SDLSUBSYSTEMMANAGER_H
 
-
 #include <memory>
 #include "ISubsystemManager.h"
 
@@ -10,7 +9,7 @@
  */
 namespace Chip8 {
 class SdlSubsystemManager : public ISubsystemManager {
-public:
+   public:
     SdlSubsystemManager();
 
     IInputController &getInputController() override;
@@ -19,10 +18,10 @@ public:
 
     virtual ~SdlSubsystemManager();
 
-private:
+   private:
     std::unique_ptr<IDisplay> display;
     std::unique_ptr<IInputController> inputController;
 };
 }
 
-#endif //CHIP_8_SDLSUBSYSTEMMANAGER_H
+#endif  // CHIP_8_SDLSUBSYSTEMMANAGER_H

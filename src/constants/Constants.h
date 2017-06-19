@@ -1,12 +1,14 @@
 #ifndef CHIP_8_CONSTANTS_H
 #define CHIP_8_CONSTANTS_H
 
+#include <cstdint>
+
 /**
  * A place to store global constants accessible by anything.
  */
 namespace Chip8 {
 class Constants {
-public:
+   public:
     static const int BITS_IN_BYTE = 8;
     static const int VALUES_IN_BYTE = 256;
     static const int MEMORY_PROGRAM_START_LOCATION = 0x200;
@@ -16,4 +18,4 @@ public:
     static const uint8_t FONT_NUM_BYTES_PER_CHARACTER = 5;
 };
 }
-#endif //CHIP_8_CONSTANTS_H
+#endif  // CHIP_8_CONSTANTS_H

@@ -10,18 +10,16 @@
  */
 namespace Chip8 {
 class BaseException : public std::exception {
-public:
-    BaseException(const std::string &message) : message(message) {};
+   public:
+    BaseException(const std::string &message) : message(message){};
 
     virtual ~BaseException() override {}
 
-    const char *what() const noexcept override {
-        return message.c_str();
-    }
+    const char *what() const noexcept override { return message.c_str(); }
 
-private:
+   private:
     std::string message;
 };
 }
 
-#endif //CHIP_8_BASEEXCEPTION_H
+#endif  // CHIP_8_BASEEXCEPTION_H

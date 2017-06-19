@@ -1,7 +1,6 @@
 #ifndef CHIP_8_INITIALIZATIONEXCEPTION_H
 #define CHIP_8_INITIALIZATIONEXCEPTION_H
 
-
 #include "BaseException.h"
 
 /**
@@ -10,9 +9,9 @@
  */
 namespace Chip8 {
 class InitializationException : public BaseException {
-public:
+   public:
     InitializationException(const std::string &message) : BaseException(message) {}
 };
 }
 
-#endif //CHIP_8_INITIALIZATIONEXCEPTION_H
+#endif  // CHIP_8_INITIALIZATIONEXCEPTION_H

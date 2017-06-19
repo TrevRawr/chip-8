@@ -4,19 +4,20 @@
 #include <cstdint>
 
 /**
- * Constants that identify opcodes. Note that these constants don't contain the entire opcode, just enough information to uniquely identify them
+ * Constants that identify opcodes. Note that these constants don't contain the entire opcode, just enough information to uniquely identify
+ * them
  * There is also not an entry for every opcode. Entries here are added as they are needed to implement things elsewhere.
  */
 namespace Chip8 {
 class Opcodes {
-public:
+   public:
     static const uint16_t CLEAR_DISPLAY = 0x00E0;
     static const uint16_t RETURN_FROM_SUBROUTINE = 0x00EE;
     static const uint16_t KEYPRESS_SKIP_IF_PRESSED = 0x9E;
     static const uint16_t KEYPRESS_SKIP_IF_NOT_PRESSED = 0xA1;
 
-    //all opcodes beginning with F
-    //only the last byte of the opcode (which uniquely identifies the opcode) is shown
+    // all opcodes beginning with F
+    // only the last byte of the opcode (which uniquely identifies the opcode) is shown
     static const int SET_REGISTER_TO_DELAY_TIMER = 0x07;
     static const int BLOCK_KEY_PRESSES = 0x0A;
     static const int SET_DELAY_TIMER_TO_REGISTER = 0x15;
@@ -29,4 +30,4 @@ public:
 };
 }
 
-#endif //CHIP_8_OPCODES_H
+#endif  // CHIP_8_OPCODES_H

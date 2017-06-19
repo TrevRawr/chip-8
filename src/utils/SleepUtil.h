@@ -6,9 +6,9 @@
  */
 namespace Chip8 {
 class SleepUtil {
-public:
+   public:
     static void sleepMillis(int millis);
 };
 }
 
-#endif //CHIP_8_SLEEPUTIL_H
+#endif  // CHIP_8_SLEEPUTIL_H

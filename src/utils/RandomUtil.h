@@ -1,7 +1,6 @@
 #ifndef CHIP_8_RANDOMUTIL_H
 #define CHIP_8_RANDOMUTIL_H
 
-
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
@@ -10,15 +9,15 @@
 
 namespace Chip8 {
 class RandomUtil {
-public:
+   public:
     /**
      * @return a random number between 0 and 255
      */
     static uint8_t getRandomNumber();
 
-private:
+   private:
     static bool isSeeded;
 };
 }
 
-#endif //CHIP_8_RANDOMUTIL_H
+#endif  // CHIP_8_RANDOMUTIL_H

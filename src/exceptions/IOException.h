@@ -9,9 +9,9 @@
  */
 namespace Chip8 {
 class IOException : public BaseException {
-public:
+   public:
     IOException(const std::string &message) : BaseException(message) {}
 };
 }
 
-#endif //CHIP_8_IOEXCEPTION_H
+#endif  // CHIP_8_IOEXCEPTION_H

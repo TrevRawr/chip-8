@@ -1,7 +1,6 @@
 #ifndef CHIP_8_METHODUNIMPLEMENTEDEXCEPTION_H
 #define CHIP_8_METHODUNIMPLEMENTEDEXCEPTION_H
 
-
 #include <exception>
 #include "UnimplementedException.h"
 
@@ -10,9 +9,9 @@
  */
 namespace Chip8 {
 class InstructionUnimplementedException : public UnimplementedException {
-public:
+   public:
     InstructionUnimplementedException(const std::string &message) : UnimplementedException(message) {}
 };
 }
 
-#endif //CHIP_8_METHODUNIMPLEMENTEDEXCEPTION_H
+#endif  // CHIP_8_METHODUNIMPLEMENTEDEXCEPTION_H

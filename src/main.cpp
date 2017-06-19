@@ -13,7 +13,7 @@ int main() {
         Chip8::Chip8 chip8{sdlSubsystemManager};
         chip8.loadGameFile("c8games/PONG");
         chip8.beginEmulation();
-    } catch(BaseException e) {
+    } catch (BaseException e) {
         std::cout << "Exception Encountered: " << e.what();
     }
     return 0;

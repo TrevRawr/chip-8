@@ -13,13 +13,11 @@ FileByteReader::FileByteReader(std::string filename) {
  * @return the number of bytes successfully read
  */
 long FileByteReader::readToBuffer(uint8_t *buffer, int offset, int size) {
-    if (!fileStream.read((char *) buffer + offset, size)) {
+    if (!fileStream.read((char *)buffer + offset, size)) {
         return fileStream.gcount();
     }
     return size;
 }
 
-FileByteReader::~FileByteReader() {
-    fileStream.close();
-}
+FileByteReader::~FileByteReader() { fileStream.close(); }
 }
