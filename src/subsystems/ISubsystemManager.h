@@ -8,12 +8,15 @@
 /**
  * An interface for controlling initialization and destruction of a set of multimedia subsystems
  */
+namespace Chip8 {
 class ISubsystemManager {
 public:
-    virtual IInputController & getInputController() = 0;
-    virtual IDisplay & getDisplay() = 0;
+    virtual IInputController &getInputController() = 0;
+
+    virtual IDisplay &getDisplay() = 0;
+
     virtual ~ISubsystemManager() {};
 };
-
+}
 
 #endif //CHIP_8_ISUBSYSTEMMANAGER_H

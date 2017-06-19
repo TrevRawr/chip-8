@@ -8,7 +8,7 @@
 /**
  * A Google Mock implementation of IInputController for testing purposes.
  */
-class MockInputController : public IInputController {
+class MockInputController : public Chip8::IInputController {
 public:
     MOCK_METHOD1(isKeyPressed, bool(unsigned int keyNumber));
     MOCK_METHOD0(checkForKeyPresses, void());

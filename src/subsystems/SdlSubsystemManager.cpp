@@ -2,15 +2,16 @@
 #include "display/Display.h"
 #include "input/InputController.h"
 
-IInputController & SdlSubsystemManager::getInputController() {
+namespace Chip8 {
+IInputController &SdlSubsystemManager::getInputController() {
     return *inputController;
 }
 
-IDisplay & SdlSubsystemManager::getDisplay() {
+IDisplay &SdlSubsystemManager::getDisplay() {
     return *display;
 }
 
-SdlSubsystemManager::SdlSubsystemManager() : display(new Display), inputController(new InputController){}
+SdlSubsystemManager::SdlSubsystemManager() : display(new Display), inputController(new InputController) {}
 
 SdlSubsystemManager::~SdlSubsystemManager() {
     //manually destroy these smart pointers so they are freed before calling SDL_Quit()
@@ -19,4 +20,5 @@ SdlSubsystemManager::~SdlSubsystemManager() {
     display.reset();
     inputController.reset();
     SDL_Quit();
+}
 }

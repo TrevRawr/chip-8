@@ -15,10 +15,10 @@ class CpuTestFixture : public ::testing::Test {
 protected:
     CpuTestFixture();
 
-    Memory memory;
+    Chip8::Memory memory;
     MockDisplay display;
     MockInputController inputController;
-    Cpu cpu;
+    Chip8::Cpu cpu;
 };
 
 

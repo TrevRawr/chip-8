@@ -3,6 +3,7 @@
 #include "InputController.h"
 #include "../../exceptions/InitializationException.h"
 
+namespace Chip8 {
 bool InputController::isKeyPressed(unsigned int keyNumber) {
     if (keyNumber >= NUM_KEYS) {
         return false;
@@ -75,4 +76,5 @@ InputController::InputController() {
 
 InputController::~InputController() {
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
+}
 }

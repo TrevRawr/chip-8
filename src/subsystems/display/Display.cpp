@@ -2,6 +2,7 @@
 #include "Display.h"
 #include "../../exceptions/InitializationException.h"
 
+namespace Chip8 {
 void Display::setPixel(int x, int y, bool value) {
     if (isPixelInBounds(x, y)) {
         int pixelIndex = getPixelIndex(x, y);
@@ -46,7 +47,8 @@ Display::Display() {
         throwSdlError("SDL could not initialize video!");
     }
 
-    window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
+                              SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         //destructor won't be called if throwing from a constructor, so we should clean up after ourselves
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -79,4 +81,5 @@ void Display::clearScreen() {
 
 void Display::updateScreen() {
     SDL_UpdateWindowSurface(window);
+}
 }

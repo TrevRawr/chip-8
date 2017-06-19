@@ -14,6 +14,7 @@
  * It executes opcodes, keeps track of and updates the chip-8 system state accordingly, and calls functionality where necessary of other components
  * (ex: IDisplay) that are passed in as dependencies.
  */
+namespace Chip8 {
 class Cpu {
 public:
     static const int INDEX_CARRY_REGISTER = 15;
@@ -25,9 +26,13 @@ public:
     void emulateCycle();
 
     uint16_t getProgramCounter() const;
+
     uint8_t getRegisterValue(unsigned int registerNumber) const;
+
     uint16_t getIndexRegisterValue() const;
+
     uint8_t getDelayTimerValue() const;
+
     uint8_t getSoundTimerValue() const;
 
 private:
@@ -44,9 +49,9 @@ private:
     uint8_t delayTimerRegister;
     uint8_t soundTimerRegister;
 
-    Memory& memory;
-    IDisplay& display;
-    IInputController& inputController;
+    Memory &memory;
+    IDisplay &display;
+    IInputController &inputController;
 
     //this is not explicitly part of the chip-8 specification,
     //but will be required to keep track of the program counter
@@ -165,32 +170,37 @@ private:
     //0xFX65
     void executeRegisterLoadOpcode(uint16_t opcode);
 
-    typedef void (Cpu::*OpcodeMemberFunction) (uint16_t opcode);
+    typedef void (Cpu::*OpcodeMemberFunction)(uint16_t opcode);
 
     //an array of function pointers that point to functions that implement an opcode or opcodes where the first nibble
     //of the opcode is the index of the implementing function in the array
     OpcodeMemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
-        &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
-        &Cpu::executeRegisterEqualsValueOpcode,
-        &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeRegisterEqualsRegisterOpcode, &Cpu::executeAssignRegisterOpcode,
-        &Cpu::executeAddToRegisterOpcode,
-        &Cpu::delegateToArithmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
-        &Cpu::executeJumpToAddressPlusRegisterOpcode,
-        &Cpu::executeRandomNumberOpcode, &Cpu::executeDrawSpriteOpcode, &Cpu::executeKeyPressedSkipOpcodes,
-        &Cpu::delegateToFOpcodeImplementations
+            &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
+            &Cpu::executeRegisterEqualsValueOpcode,
+            &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeRegisterEqualsRegisterOpcode,
+            &Cpu::executeAssignRegisterOpcode,
+            &Cpu::executeAddToRegisterOpcode,
+            &Cpu::delegateToArithmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode,
+            &Cpu::executeAssignOpcode,
+            &Cpu::executeJumpToAddressPlusRegisterOpcode,
+            &Cpu::executeRandomNumberOpcode, &Cpu::executeDrawSpriteOpcode, &Cpu::executeKeyPressedSkipOpcodes,
+            &Cpu::delegateToFOpcodeImplementations
     };
 
     OpcodeMemberFunction arithmeticOpcodeImplementations[NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS] = {
             &Cpu::executeArithmeticSetOpcode, &Cpu::executeArithmeticSetOrOpcode, &Cpu::executeArithmeticSetAndOpcode,
-        &Cpu::executeArithmeticSetXOROpcode,
-        &Cpu::executeArithmeticAddOpcode, &Cpu::executeArithmeticSubtractOpcode, &Cpu::executeArithmeticShiftRightOpcode,
-        &Cpu::executeArithmeticSubtractDifferenceOpcode,
-        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode,
-        &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::executeArithmeticShiftLeftOpcode,
-        &Cpu::handleUnimplementedOpcode
+            &Cpu::executeArithmeticSetXOROpcode,
+            &Cpu::executeArithmeticAddOpcode, &Cpu::executeArithmeticSubtractOpcode,
+            &Cpu::executeArithmeticShiftRightOpcode,
+            &Cpu::executeArithmeticSubtractDifferenceOpcode,
+            &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode,
+            &Cpu::handleUnimplementedOpcode,
+            &Cpu::handleUnimplementedOpcode, &Cpu::handleUnimplementedOpcode, &Cpu::executeArithmeticShiftLeftOpcode,
+            &Cpu::handleUnimplementedOpcode
     };
+
     int getFirstNibbleFromOpcode(uint16_t opcode) const;
+
     unsigned int getSecondNibbleFromOpcode(uint16_t opcode) const;
 
     int getThirdNibbleFromOpcode(uint16_t opcode) const;
@@ -205,5 +215,6 @@ private:
 
     void updateTimers();
 };
+}
 
 #endif //CHIP_8_CPU_H

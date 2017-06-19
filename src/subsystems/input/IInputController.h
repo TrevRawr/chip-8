@@ -8,11 +8,13 @@
  * The interface is pretty generic and simple, so it be easily implementable by just about any platform.
  * In addition, this interface can be mocked out in testing where applicable in order to test any classes that use it as a dependency.
  */
+namespace Chip8 {
 class IInputController {
 public:
     static const int NUM_KEYS = 16;
 
     virtual ~IInputController() {};
+
     /**
      * @return whether or not the key at keyNumber is pressed. If keyNumber is larger than NUM_KEYS, returns false
      */
@@ -28,6 +30,6 @@ public:
      */
     virtual uint8_t waitForKeyPress()= 0;
 };
-
+}
 
 #endif //CHIP_8_IINPUTCONTROLLER_H

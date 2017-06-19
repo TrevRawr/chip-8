@@ -4,6 +4,7 @@
 /**
  * Bit shift amounts used to help access data stored in opcodes.
  */
+namespace Chip8 {
 class OpcodeBitshifts {
 public:
     //a nibble is half a byte (4 bits). Since opcodes are 16 bits, shifting a nibble by 12 will position it
@@ -13,5 +14,6 @@ public:
     static const int NIBBLE = 4;
     static const int BIT_FIRST_TO_LAST = 15;
 };
+}
 
 #endif //CHIP_8_OPCODEBITSHIFTS_H

@@ -8,6 +8,7 @@
  * The interface is fairly simple, allowing just about any platform to implement it as necessary, hopefully simplifying cross-platform development.
  * Another benefit of having an interface is that the display dependency can be mocked out in unit tests where applicable, in order to test dependent code.
  */
+namespace Chip8 {
 class IDisplay {
 public:
     static const int SPRITE_WIDTH = 8;
@@ -33,6 +34,6 @@ public:
      */
     virtual void updateScreen() = 0;
 };
-
+}
 
 #endif //CHIP_8_IDISPLAY_H

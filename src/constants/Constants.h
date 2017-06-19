@@ -4,6 +4,7 @@
 /**
  * A place to store global constants accessible by anything.
  */
+namespace Chip8 {
 class Constants {
 public:
     static const int BITS_IN_BYTE = 8;
@@ -14,4 +15,5 @@ public:
     static const int MAX_INDEX_REGISTER_VALUE = 0xFFF;
     static const uint8_t FONT_NUM_BYTES_PER_CHARACTER = 5;
 };
+}
 #endif //CHIP_8_CONSTANTS_H

@@ -7,6 +7,7 @@
  * Constants that identify opcodes. Note that these constants don't contain the entire opcode, just enough information to uniquely identify them
  * There is also not an entry for every opcode. Entries here are added as they are needed to implement things elsewhere.
  */
+namespace Chip8 {
 class Opcodes {
 public:
     static const uint16_t CLEAR_DISPLAY = 0x00E0;
@@ -26,5 +27,6 @@ public:
     static const int REGISTER_DUMP = 0x55;
     static const int REGISTER_LOAD = 0x65;
 };
+}
 
 #endif //CHIP_8_OPCODES_H

@@ -8,7 +8,7 @@
 /**
  * A Google Mock implementation of IDisplay for testing purposes.
  */
-class MockDisplay : public IDisplay {
+class MockDisplay : public Chip8::IDisplay {
 public:
     MOCK_METHOD3(setPixel, void(int x, int y, bool value));
     MOCK_METHOD2(getPixel, bool(int x, int y));

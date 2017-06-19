@@ -7,6 +7,7 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Return;
 
+using namespace Chip8;
 /**
  * A set of testcases for testing every chip-8 cpu opcode
  * Corresponding opcodes to testcases are commented on top of testcases. If a testcase doesn't have an opcode commented on it,
