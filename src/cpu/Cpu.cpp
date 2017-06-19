@@ -3,8 +3,9 @@
 #include "../constants/Constants.h"
 #include "../constants/OpcodeBitshifts.h"
 #include "../utils/RandomUtil.h"
+#include "../exceptions/IndexOutOfBoundsException.h"
 
-Cpu::Cpu(Memory &memory, Display &display, InputController &inputController) : memory(memory), display(display), inputController(inputController) {
+Cpu::Cpu(Memory &memory, IDisplay &display, IInputController &inputController) : memory(memory), display(display), inputController(inputController) {
     programCounter = Constants::MEMORY_PROGRAM_START_LOCATION;
     indexRegister = 0;
     currStackLevel = 0;
@@ -12,14 +13,12 @@ Cpu::Cpu(Memory &memory, Display &display, InputController &inputController) : m
     for (int i = 0; i < NUM_GENERAL_PURPOSE_REGISTERS; i++) {
         generalPurposeRegisters[i] = 0;
     }
-    //TODO: figure out how to initialize these
-//    delayTimerRegister = 0;
-//    soundTimerRegister = 0;
+    
+    delayTimerRegister = 0;
+    soundTimerRegister = 0;
 }
 
 void Cpu::emulateCycle() {
-    //TODO: change delay to actual processor clock rate
-    SDL_Delay(1);
     updateTimers();
     uint16_t opcode = fetchOpCode();
 
@@ -33,7 +32,6 @@ void Cpu::emulateCycle() {
     programCounter += DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE;
 
     decodeAndExecuteOpcode(opcode);
-    display.updateScreen();
 }
 
 uint16_t Cpu::fetchOpCode() {
@@ -66,6 +64,7 @@ void Cpu::executeOpcodeBeginningWithZero(uint16_t opcode) {
     switch (opcode) {
         case Opcodes::CLEAR_DISPLAY:
             display.clearScreen();
+            display.updateScreen();
             return;
         case Opcodes::RETURN_FROM_SUBROUTINE:
             executeReturnFromSubroutineOpcode();
@@ -76,6 +75,9 @@ void Cpu::executeOpcodeBeginningWithZero(uint16_t opcode) {
 }
 
 void Cpu::executeReturnFromSubroutineOpcode() {
+    if (currStackLevel == 0) {
+        throw IndexOutOfBoundsException("No subroutine to return from. Call stack is empty");
+    }
     currStackLevel--;
     programCounter = stack[currStackLevel] + DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE;
 }
@@ -89,6 +91,9 @@ void Cpu::executeJumpOpcode(uint16_t opcode) {
 }
 
 void Cpu::executeCallSubroutineOpcode(uint16_t opcode) {
+    if (currStackLevel == NUM_STACK_LEVELS) {
+        throw IndexOutOfBoundsException("Call stack is full. No more room to call more subroutines");
+    }
     //Save the location of the programCounter before going to the specified subroutine, so we can return later.
     //if we didn't increment the program counter after fetching each instruction in emulateCycle(), we could just
     //set the stack to programCounter, but to "undo" this increment, we subtract programCounter by the amount added earlier
@@ -118,10 +123,10 @@ void Cpu::executeRegisterNotEqualsValueOpcode(uint16_t opcode) {
     }
 }
 
-void Cpu::executeValueEqualsValueOpcode(uint16_t opcode) {
-    int value1 = getSecondNibbleFromOpcode(opcode);
-    int value2 = getThirdNibbleFromOpcode(opcode);
-    if (value1 == value2) {
+void Cpu::executeRegisterEqualsRegisterOpcode(uint16_t opcode) {
+    int registerNumberX = getSecondNibbleFromOpcode(opcode);
+    int registerNumberY = getThirdNibbleFromOpcode(opcode);
+    if (generalPurposeRegisters[registerNumberX] == generalPurposeRegisters[registerNumberY]) {
         skipInstruction();
     }
 }
@@ -196,7 +201,7 @@ void Cpu::setSubtractionXYOverflowRegisters(int registerNumberX, int registerNum
 
 void Cpu::executeArithmeticShiftRightOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
-    generalPurposeRegisters[INDEX_CARRY_REGISTER] = (uint8_t) (opcode & OpcodeBitmasks::LAST_BIT);
+    generalPurposeRegisters[INDEX_CARRY_REGISTER] = (uint8_t) (generalPurposeRegisters[registerNumberX] & OpcodeBitmasks::LAST_BIT);
     generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] >> 1;
 }
 
@@ -209,26 +214,26 @@ void Cpu::executeArithmeticSubtractDifferenceOpcode(uint16_t opcode) {
 
 void Cpu::setSubtractionYXOverflowRegisters(int registerNumberX, int registerNumberY) {
     if (generalPurposeRegisters[registerNumberY] - generalPurposeRegisters[registerNumberX] < 0) {
-        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
-    } else {
         generalPurposeRegisters[INDEX_CARRY_REGISTER] = 0;
+    } else {
+        generalPurposeRegisters[INDEX_CARRY_REGISTER] = 1;
     }
 }
 
 void Cpu::executeArithmeticShiftLeftOpcode(uint16_t opcode) {
     int registerNumberX = getSecondNibbleFromOpcode(opcode);
     generalPurposeRegisters[INDEX_CARRY_REGISTER] =
-            (uint8_t) ((generalPurposeRegisters[registerNumberX] & OpcodeBitmasks::FIRST_BIT) >> OpcodeBitshifts::BIT_FIRST_TO_LAST);
+            (uint8_t) ((generalPurposeRegisters[registerNumberX] & BITMASK_REGISTER_FIRST_BIT) >> BITSHIFT_REGISTER_FIRST_TO_LAST);
     generalPurposeRegisters[registerNumberX] = generalPurposeRegisters[registerNumberX] << 1;
 }
 
 int Cpu::getFirstNibbleFromOpcode(uint16_t opcode) const {
-    int registerNumber = (opcode & OpcodeBitmasks::FIRST_NIBBLE) >> OpcodeBitshifts::NIBBLE_FIRST_TO_LAST;
+    int registerNumber = (opcode & OpcodeBitmasks::FIRST_NIBBLE) >> OpcodeBitshifts::NIBBLE_THREE;
     return registerNumber;
 }
 
 unsigned int Cpu::getSecondNibbleFromOpcode(uint16_t opcode) const {
-    unsigned int registerNumber = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::BYTE_FIRST_TO_LAST;
+    unsigned int registerNumber = (opcode & OpcodeBitmasks::SECOND_NIBBLE) >> OpcodeBitshifts::NIBBLE_TWO;
     return registerNumber;
 }
 
@@ -270,7 +275,7 @@ void Cpu::executeDrawSpriteOpcode(uint16_t opcode) {
         //a bitmask that in binary looks like 10000000
         //we use this to read the values of the bits in the pixelRow from left to right
         uint8_t bitmask = 0x80;
-        for (int width = 0; width < Display::SPRITE_WIDTH; width++) {
+        for (int width = 0; width < IDisplay::SPRITE_WIDTH; width++) {
             //shift the bitmask over by one each iteration to evaluate the next bit of the pixelRow on the next loop iteration
             //ex: on the second iteration, (bitmask >> width) will be 01000000 and can be used to observe the value of the 2nd bit of the pixelRow
             //a non-zero value means the pixel must have been on
@@ -286,6 +291,7 @@ void Cpu::executeDrawSpriteOpcode(uint16_t opcode) {
             }
         }
     }
+    display.updateScreen();
 }
 
 void Cpu::executeKeyPressedSkipOpcodes(uint16_t opcode) {
@@ -367,10 +373,8 @@ void Cpu::executeAddRegisterToIndexRegisterOpcode(uint16_t opcode) {
     int registerNumber = getSecondNibbleFromOpcode(opcode);
     setIndexOverflowRegister(registerNumber);
     indexRegister += generalPurposeRegisters[registerNumber];
-    //TODO: make sure this behaves correctly*************************************
-    if (indexRegister > Constants::MAX_INDEX_REGISTER_VALUE) {
-        indexRegister -= Constants::MAX_INDEX_REGISTER_VALUE;
-    }
+    //constrains the range to MAX_REGISTER_VALUE and makes numbers higher than this "loop" around
+    indexRegister %= Constants::MAX_INDEX_REGISTER_VALUE + 1;
 }
 
 void Cpu::setIndexOverflowRegister(int registerNumber) {
@@ -429,6 +433,29 @@ void Cpu::updateTimers() {
     if (soundTimerRegister > 0) {
         soundTimerRegister--;
     }
+}
+
+uint16_t Cpu::getProgramCounter() const {
+    return programCounter;
+}
+
+uint8_t Cpu::getRegisterValue(unsigned int registerNumber) const {
+    if (registerNumber >= NUM_GENERAL_PURPOSE_REGISTERS) {
+        throw IndexOutOfBoundsException("Register Number out of bounds");
+    }
+    return generalPurposeRegisters[registerNumber];
+}
+
+uint16_t Cpu::getIndexRegisterValue() const {
+    return indexRegister;
+}
+
+uint8_t Cpu::getDelayTimerValue() const {
+    return delayTimerRegister;
+}
+
+uint8_t Cpu::getSoundTimerValue() const {
+    return soundTimerRegister;
 }
 
 

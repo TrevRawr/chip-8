@@ -1,6 +1,7 @@
 .idea
 #ignore game files in project directory
 c8games
+cmake-build-debug
 
 ##################C++ Ignore#################
 # Prerequisites

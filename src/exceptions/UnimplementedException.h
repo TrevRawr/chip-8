@@ -3,6 +3,9 @@
 
 #include "BaseException.h"
 
+/**
+ * An exception to be thrown by any function/method that is unimplemented.
+ */
 class UnimplementedException : public BaseException {
 public:
     UnimplementedException(const std::string &message) : BaseException(message) {}

@@ -1,4 +1,6 @@
+#include <sstream>
 #include "Display.h"
+#include "../../exceptions/InitializationException.h"
 
 void Display::setPixel(int x, int y, bool value) {
     if (isPixelInBounds(x, y)) {
@@ -24,7 +26,15 @@ int Display::getPixelIndex(int x, int y) const {
 }
 
 bool Display::isPixelInBounds(int x, int y) {
-    return !(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT);
+    return !(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT || x < 0 || y < 0);
+}
+
+void throwSdlError(std::string errorMessage) {
+    std::ostringstream errorStringStream;
+    errorStringStream << errorMessage;
+    errorStringStream << " SDL_Error: ";
+    errorStringStream << SDL_GetError();
+    throw InitializationException(errorStringStream.str());
 }
 
 Display::Display() {
@@ -33,12 +43,14 @@ Display::Display() {
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        throwSdlError("SDL could not initialize video!");
     }
 
-    window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
-        printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        //destructor won't be called if throwing from a constructor, so we should clean up after ourselves
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
+        throwSdlError("SDL could not create a window!");
     } else {
         surface = SDL_GetWindowSurface(window);
         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
@@ -53,7 +65,8 @@ void Display::setSdlPixel(int x, int y, uint32_t pixel) {
 
 Display::~Display() {
     SDL_DestroyWindow(window);
-    SDL_Quit();
+    SDL_FreeSurface(surface);
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 void Display::clearScreen() {
@@ -67,5 +80,3 @@ void Display::clearScreen() {
 void Display::updateScreen() {
     SDL_UpdateWindowSurface(window);
 }
-
-

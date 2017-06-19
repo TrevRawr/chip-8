@@ -6,23 +6,37 @@
 #include "../constants/OpcodeBitmasks.h"
 #include "../constants/Opcodes.h"
 #include "../exceptions/InstructionUnimplementedException.h"
-#include "../display/Display.h"
-#include "../input/InputController.h"
+#include "../subsystems/display/IDisplay.h"
+#include "../subsystems/input/IInputController.h"
 
+/**
+ * The cpu is the heart of the emulator, and implements every opcode in the chip-8 specification
+ * It executes opcodes, keeps track of and updates the chip-8 system state accordingly, and calls functionality where necessary of other components
+ * (ex: IDisplay) that are passed in as dependencies.
+ */
 class Cpu {
 public:
-    Cpu(Memory &memory, Display &display, InputController &inputController);
+    static const int INDEX_CARRY_REGISTER = 15;
+    static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
+    static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
+
+    Cpu(Memory &memory, IDisplay &display, IInputController &inputController);
 
     void emulateCycle();
 
+    uint16_t getProgramCounter() const;
+    uint8_t getRegisterValue(unsigned int registerNumber) const;
+    uint16_t getIndexRegisterValue() const;
+    uint8_t getDelayTimerValue() const;
+    uint8_t getSoundTimerValue() const;
+
 private:
-    static const uint16_t DEFAULT_NUM_INSTRUCTIONS_PER_CYCLE = 2;
     //this includes the "carry-flag" register VF
-    static const int NUM_GENERAL_PURPOSE_REGISTERS = 16;
-    static const int INDEX_CARRY_REGISTER = 15;
     static const int NUM_STACK_LEVELS = 16;
     static const int NUM_OP_CODE_IMPLEMENTATIONS = 16;
     static const int NUM_ARITHMETIC_OPCODE_IMPLEMENTATIONS = 16;
+    static const uint8_t BITMASK_REGISTER_FIRST_BIT = 0x80;
+    static const uint8_t BITSHIFT_REGISTER_FIRST_TO_LAST = 7;
 
     uint8_t generalPurposeRegisters[NUM_GENERAL_PURPOSE_REGISTERS];
     uint16_t indexRegister;
@@ -31,8 +45,8 @@ private:
     uint8_t soundTimerRegister;
 
     Memory& memory;
-    Display& display;
-    InputController& inputController;
+    IDisplay& display;
+    IInputController& inputController;
 
     //this is not explicitly part of the chip-8 specification,
     //but will be required to keep track of the program counter
@@ -69,7 +83,7 @@ private:
     void executeRegisterNotEqualsValueOpcode(uint16_t opcode);
 
     //0x5XY0
-    void executeValueEqualsValueOpcode(uint16_t opcode);
+    void executeRegisterEqualsRegisterOpcode(uint16_t opcode);
 
     //0x6XNN
     void executeAssignRegisterOpcode(uint16_t opcode);
@@ -158,7 +172,7 @@ private:
     OpcodeMemberFunction cpuOpcodeImplementations[NUM_OP_CODE_IMPLEMENTATIONS] = {
         &Cpu::executeOpcodeBeginningWithZero, &Cpu::executeJumpOpcode, &Cpu::executeCallSubroutineOpcode,
         &Cpu::executeRegisterEqualsValueOpcode,
-        &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeValueEqualsValueOpcode, &Cpu::executeAssignRegisterOpcode,
+        &Cpu::executeRegisterNotEqualsValueOpcode, &Cpu::executeRegisterEqualsRegisterOpcode, &Cpu::executeAssignRegisterOpcode,
         &Cpu::executeAddToRegisterOpcode,
         &Cpu::delegateToArithmethicOpcodeImplementations, &Cpu::executeNotEqualsRegistersOpcode, &Cpu::executeAssignOpcode,
         &Cpu::executeJumpToAddressPlusRegisterOpcode,

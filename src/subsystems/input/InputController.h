@@ -1,20 +1,33 @@
-#ifndef CHIP_8_INPUT_H
-#define CHIP_8_INPUT_H
+#ifndef CHIP_8_INPUTCONTROLLER_H
+#define CHIP_8_INPUTCONTROLLER_H
 
 
-class InputController {
+#include "IInputController.h"
+#include <SDL.h>
+
+/**
+ * An implementation of IInputController using SDL. This is a fairly simple implementation
+ * that doesn't do too much beyond mapping chip-8 input to a few keyboard keys.
+ */
+class InputController : public IInputController {
 public:
-    static const int NUM_KEYS = 16;
+    InputController();
+
+    virtual ~InputController();
+
     /**
      * @return whether or not the key at keyNumber is pressed. If keyNumber is larger than NUM_KEYS, returns false
      */
-    bool isKeyPressed(unsigned int keyNumber);
-    void checkForKeyPresses();
+    bool isKeyPressed(unsigned int keyNumber) override;
+    void checkForKeyPresses() override;
+
+    bool isExitButtonPressed() override;
+
     /**
      * Blocks until the next keydown event occurs, and handles the next keydown event
      * @return the number of the key that was pressed
      */
-    uint8_t waitForKeyPress();
+    uint8_t waitForKeyPress() override;
 private:
     static const int ERROR_NO_INPUT_HANDLED = -1;
 
@@ -25,6 +38,7 @@ private:
             SDLK_z, SDLK_x, SDLK_c, SDLK_v
     };
     bool keyPressedStates[NUM_KEYS];
+    bool isExitPressed = false;
 
     /**
      * @return the chip-8 key number mapped to the keyboard key if the specified pressedKey is mapped to a chip-8 key
@@ -41,4 +55,4 @@ private:
 };
 
 
-#endif //CHIP_8_INPUT_H
+#endif //CHIP_8_INPUTCONTROLLER_H
