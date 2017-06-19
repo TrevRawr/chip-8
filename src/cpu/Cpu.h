@@ -6,8 +6,8 @@
 #include "../constants/OpcodeBitmasks.h"
 #include "../constants/Opcodes.h"
 #include "../exceptions/InstructionUnimplementedException.h"
-#include "../display/IDisplay.h"
-#include "../input/IInputController.h"
+#include "../subsystems/display/IDisplay.h"
+#include "../subsystems/input/IInputController.h"
 
 /**
  * The cpu is the heart of the emulator, and implements every opcode in the chip-8 specification

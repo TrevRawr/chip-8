@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 3.6)
 project(chip_8)
 
-#Set C++ standard, and make all warnings into compile time errors
+#Set C++ standard
+#make all warnings into compile time errors
+#use a memory leak dynamic (runtime) sanitizer to detect memory leaks.
+#Note: there seems to be memory leaks reported with some graphics and input drivers (ex: vmwgfx_dri - VMware's GL Driver, and libxi) that are out of this application's control
 set(CMAKE_CXX_STANDARD 11)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=leak -fno-omit-frame-pointer -Werror -Wall -Wextra")
 
 #Setup main emulator executable
-set(SOURCE_FILES src/cpu/Cpu.cpp src/cpu/Cpu.h src/display/IDisplay.h src/input/IInputController.h src/storage/Memory.cpp src/storage/Memory.h src/exceptions/IndexOutOfBoundsException.h src/constants/Constants.h src/exceptions/InstructionUnimplementedException.h src/exceptions/BaseException.h src/constants/OpcodeBitmasks.h src/constants/Opcodes.h src/exceptions/UnimplementedException.h src/constants/OpcodeBitshifts.h src/utils/RandomUtil.cpp src/utils/RandomUtil.h src/io/FileByteReader.cpp src/io/FileByteReader.h src/exceptions/IOException.h)
+set(SOURCE_FILES src/cpu/Cpu.cpp src/cpu/Cpu.h src/subsystems/display/IDisplay.h src/subsystems/input/IInputController.h src/storage/Memory.cpp src/storage/Memory.h src/exceptions/IndexOutOfBoundsException.h src/constants/Constants.h src/exceptions/InstructionUnimplementedException.h src/exceptions/BaseException.h src/constants/OpcodeBitmasks.h src/constants/Opcodes.h src/exceptions/UnimplementedException.h src/constants/OpcodeBitshifts.h src/utils/RandomUtil.cpp src/utils/RandomUtil.h src/io/FileByteReader.cpp src/io/FileByteReader.h src/exceptions/IOException.h src/exceptions/InitializationException.h src/subsystems/ISubsystemManager.h src/Chip8.cpp src/Chip8.h src/utils/SleepUtil.cpp src/utils/SleepUtil.h)
 #keep source files that are dependent on SDL library separate in order to exclude from testcases build (and possibly other builds in the future).
-set(SDL_SOURCE_FILES src/Chip8.cpp src/Chip8.h src/display/Display.cpp src/display/Display.h src/input/InputController.cpp src/input/InputController.h)
-add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${SDL_SOURCE_FILES})
+set(SDL_SOURCE_FILES src/subsystems/display/Display.cpp src/subsystems/display/Display.h src/subsystems/input/InputController.cpp src/subsystems/input/InputController.h src/subsystems/SdlSubsystemManager.cpp src/subsystems/SdlSubsystemManager.h src/main.cpp)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SDL_SOURCE_FILES})
 
 #Setup SDL2 Library dependencies
 include(FindPkgConfig)

@@ -3,8 +3,7 @@
 
 
 #include "cpu/Cpu.h"
-#include "display/Display.h"
-#include "input/InputController.h"
+#include "subsystems/ISubsystemManager.h"
 #include <string>
 
 /**
@@ -16,7 +15,7 @@
  */
 class Chip8 {
 public:
-    Chip8();
+    Chip8(ISubsystemManager &subsystemManager);
 
     void loadGameFile(std::string game);
     void beginEmulation();
@@ -44,8 +43,7 @@ private:
 
     bool isEmulating = false;
     Memory memory;
-    Display display;
-    InputController inputController;
+    ISubsystemManager& subsystemManager;
     Cpu cpu;
 
     void loadFontToMemory();

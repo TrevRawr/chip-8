@@ -2,7 +2,7 @@
 #define CHIP_8_MOCKDISPLAY_H
 
 
-#include "../../src/display/IDisplay.h"
+#include "../../src/subsystems/display/IDisplay.h"
 #include "gmock/gmock.h"
 
 /**

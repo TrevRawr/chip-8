@@ -3,6 +3,7 @@
 
 
 #include "IInputController.h"
+#include <SDL.h>
 
 /**
  * An implementation of IInputController using SDL. This is a fairly simple implementation
@@ -10,11 +11,18 @@
  */
 class InputController : public IInputController {
 public:
+    InputController();
+
+    virtual ~InputController();
+
     /**
      * @return whether or not the key at keyNumber is pressed. If keyNumber is larger than NUM_KEYS, returns false
      */
     bool isKeyPressed(unsigned int keyNumber) override;
     void checkForKeyPresses() override;
+
+    bool isExitButtonPressed() override;
+
     /**
      * Blocks until the next keydown event occurs, and handles the next keydown event
      * @return the number of the key that was pressed
@@ -30,6 +38,7 @@ private:
             SDLK_z, SDLK_x, SDLK_c, SDLK_v
     };
     bool keyPressedStates[NUM_KEYS];
+    bool isExitPressed = false;
 
     /**
      * @return the chip-8 key number mapped to the keyboard key if the specified pressedKey is mapped to a chip-8 key

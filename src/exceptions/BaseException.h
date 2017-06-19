@@ -11,6 +11,7 @@
 class BaseException : public std::exception {
 public:
     BaseException(const std::string &message) : message(message) {};
+    virtual ~BaseException() override {}
     const char* what() const noexcept override {
         return message.c_str();
     }

@@ -1,6 +1,8 @@
 #ifndef CHIP_8_IINPUTCONTROLLER_H
 #define CHIP_8_IINPUTCONTROLLER_H
 
+#include <cstdint>
+
 /**
  * An interface that must be implemented in order for the chip-8 emulator to support user input
  * The interface is pretty generic and simple, so it be easily implementable by just about any platform.
@@ -15,6 +17,8 @@ public:
      * @return whether or not the key at keyNumber is pressed. If keyNumber is larger than NUM_KEYS, returns false
      */
     virtual bool isKeyPressed(unsigned int keyNumber)= 0;
+
+    virtual bool isExitButtonPressed() = 0;
 
     virtual void checkForKeyPresses()= 0;
 
