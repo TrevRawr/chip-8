@@ -1,9 +1,9 @@
 #ifndef CHIP_8_CPUTESTFIXTURE_H
 #define CHIP_8_CPUTESTFIXTURE_H
 
-#include "gtest/gtest.h"
-#include "../src/storage/Memory.h"
 #include "../src/cpu/Cpu.h"
+#include "../src/storage/Memory.h"
+#include "gtest/gtest.h"
 #include "mocks/MockDisplay.h"
 #include "mocks/MockInputController.h"
 
@@ -12,14 +12,13 @@
  * in order to achieve isolated unit tests.
  */
 class CpuTestFixture : public ::testing::Test {
-protected:
+   protected:
     CpuTestFixture();
 
-    Memory memory;
+    Chip8::Memory memory;
     MockDisplay display;
     MockInputController inputController;
-    Cpu cpu;
+    Chip8::Cpu cpu;
 };
 
-
-#endif //CHIP_8_CPUTESTFIXTURE_H
+#endif  // CHIP_8_CPUTESTFIXTURE_H

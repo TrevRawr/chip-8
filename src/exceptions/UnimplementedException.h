@@ -6,8 +6,11 @@
 /**
  * An exception to be thrown by any function/method that is unimplemented.
  */
+namespace Chip8 {
 class UnimplementedException : public BaseException {
-public:
+   public:
     UnimplementedException(const std::string &message) : BaseException(message) {}
 };
-#endif //CHIP_8_UNIMPLEMENTEDEXCEPTION_H
+}
+
+#endif  // CHIP_8_UNIMPLEMENTEDEXCEPTION_H

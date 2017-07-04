@@ -1,28 +1,26 @@
 #include "Chip8.h"
 #include "constants/Constants.h"
-#include "io/FileByteReader.h"
 #include "exceptions/IOException.h"
+#include "io/FileByteReader.h"
 #include "utils/SleepUtil.h"
 
-
-//needed for static class definition of this array to compile
+namespace Chip8 {
+// needed for static class definition of this array to compile
 constexpr unsigned char Chip8::DEFAULT_FONT_SET[FONTSET_BUFFER_SIZE];
 
 void Chip8::beginEmulation() {
-    //TODO: consider starting this in a separate thread so that the emulator can be stopped if desired
+    // TODO: consider starting this in a separate thread so that the emulator can be stopped if desired
     isEmulating = true;
     while (isEmulating) {
         subsystemManager.getInputController().checkForKeyPresses();
-        //TODO: change delay to actual processor clock rate
+        // TODO: change delay to actual processor clock rate
         SleepUtil::sleepMillis(1);
         cpu.emulateCycle();
         isEmulating = !subsystemManager.getInputController().isExitButtonPressed();
     }
 }
 
-void Chip8::stopEmulation() {
-    isEmulating = false;
-}
+void Chip8::stopEmulation() { isEmulating = false; }
 
 void Chip8::loadFontToMemory() {
     for (unsigned int i = 0; i < FONTSET_BUFFER_SIZE; i++) {
@@ -44,6 +42,10 @@ void Chip8::loadGameFile(std::string game) {
     }
 }
 
-Chip8::Chip8(ISubsystemManager &subsystemManager) : memory(Memory()), subsystemManager(subsystemManager), cpu(Cpu(memory, subsystemManager.getDisplay(), subsystemManager.getInputController())) {
+Chip8::Chip8(ISubsystemManager &subsystemManager)
+    : memory(Memory()),
+      subsystemManager(subsystemManager),
+      cpu(Cpu(memory, subsystemManager.getDisplay(), subsystemManager.getInputController())) {
     loadFontToMemory();
+}
 }

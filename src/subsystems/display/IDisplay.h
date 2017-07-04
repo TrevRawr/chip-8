@@ -5,14 +5,17 @@
 
 /**
  * An interface that must be implemented in order to allow the chip-8 emulator to draw any output onto the screen
- * The interface is fairly simple, allowing just about any platform to implement it as necessary, hopefully simplifying cross-platform development.
- * Another benefit of having an interface is that the display dependency can be mocked out in unit tests where applicable, in order to test dependent code.
+ * The interface is fairly simple, allowing just about any platform to implement it as necessary, hopefully simplifying cross-platform
+ * development.
+ * Another benefit of having an interface is that the display dependency can be mocked out in unit tests where applicable, in order to test
+ * dependent code.
  */
+namespace Chip8 {
 class IDisplay {
-public:
+   public:
     static const int SPRITE_WIDTH = 8;
 
-    virtual ~IDisplay() {};
+    virtual ~IDisplay(){};
 
     /**
      * sets a pixel at the specified coordinate to on or off. If the pixel is unspecified, does nothing.
@@ -33,6 +36,6 @@ public:
      */
     virtual void updateScreen() = 0;
 };
+}
 
-
-#endif //CHIP_8_IDISPLAY_H
+#endif  // CHIP_8_IDISPLAY_H

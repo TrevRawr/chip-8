@@ -8,11 +8,18 @@ project(chip_8)
 set(CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=leak -fno-omit-frame-pointer -Werror -Wall -Wextra")
 
-#Setup main emulator executable
+#Setup different source file variables
 set(SOURCE_FILES src/cpu/Cpu.cpp src/cpu/Cpu.h src/subsystems/display/IDisplay.h src/subsystems/input/IInputController.h src/storage/Memory.cpp src/storage/Memory.h src/exceptions/IndexOutOfBoundsException.h src/constants/Constants.h src/exceptions/InstructionUnimplementedException.h src/exceptions/BaseException.h src/constants/OpcodeBitmasks.h src/constants/Opcodes.h src/exceptions/UnimplementedException.h src/constants/OpcodeBitshifts.h src/utils/RandomUtil.cpp src/utils/RandomUtil.h src/io/FileByteReader.cpp src/io/FileByteReader.h src/exceptions/IOException.h src/exceptions/InitializationException.h src/subsystems/ISubsystemManager.h src/Chip8.cpp src/Chip8.h src/utils/SleepUtil.cpp src/utils/SleepUtil.h)
 #keep source files that are dependent on SDL library separate in order to exclude from testcases build (and possibly other builds in the future).
 set(SDL_SOURCE_FILES src/subsystems/display/Display.cpp src/subsystems/display/Display.h src/subsystems/input/InputController.cpp src/subsystems/input/InputController.h src/subsystems/SdlSubsystemManager.cpp src/subsystems/SdlSubsystemManager.h src/main.cpp)
+set(TESTING_SOURCE_FILES testcases/CpuTest.cpp testcases/CpuTestFixture.cpp testcases/CpuTestFixture.h ${SOURCE_FILES} testcases/main.cpp testcases/mocks/MockDisplay.h testcases/mocks/MockInputController.h)
+
+#Setup main emulator executable
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SDL_SOURCE_FILES})
+
+#makefile target to run clang-format on all built files
+#See more at: https://arcanis.me/en/2015/10/17/cppcheck-and-clang-format#sthash.nl8UE5nB.dpuf
+add_custom_target(clangformat COMMAND cd .. && /usr/bin/clang-format -style=file -i ${SOURCE_FILES} ${SDL_SOURCE_FILES} ${TESTING_SOURCE_FILES})
 
 #Setup SDL2 Library dependencies
 include(FindPkgConfig)
@@ -57,7 +64,6 @@ include_directories("${source_dir}/googletest/include"
 
 #add_test allows you to execute test cases using "make test" i.e. the test target in the generated Makefile.
 #running this target only works from inside the build folder (Otherwise, there's no Makefile!)
-set(TESTING_SOURCE_FILES testcases/CpuTest.cpp testcases/CpuTestFixture.cpp testcases/CpuTestFixture.h ${SOURCE_FILES} testcases/main.cpp testcases/mocks/MockDisplay.h testcases/mocks/MockInputController.h)
 add_executable(testcases ${TESTING_SOURCE_FILES})
 target_link_libraries(testcases libgtest libgmock)
 add_test(EmulatorTests testcases)
