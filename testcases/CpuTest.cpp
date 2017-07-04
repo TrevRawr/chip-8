@@ -2,7 +2,6 @@
 #include "../src/constants/OpcodeBitshifts.h"
 #include "../src/exceptions/IndexOutOfBoundsException.h"
 #include "CpuTestFixture.h"
-#include "gtest/gtest.h"
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Return;

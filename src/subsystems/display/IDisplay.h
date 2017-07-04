@@ -1,8 +1,6 @@
 #ifndef CHIP_8_IDISPLAY_H
 #define CHIP_8_IDISPLAY_H
 
-#include <SDL.h>
-
 /**
  * An interface that must be implemented in order to allow the chip-8 emulator to draw any output onto the screen
  * The interface is fairly simple, allowing just about any platform to implement it as necessary, hopefully simplifying cross-platform
