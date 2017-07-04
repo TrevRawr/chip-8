@@ -10,7 +10,7 @@ include(add_external_static_cmake_library)
 # use a memory leak dynamic (runtime) sanitizer to detect memory leaks.
 # Note: there seems to be memory leaks reported with some graphics and input drivers (ex: vmwgfx_dri - VMware's GL Driver, and libxi) that are out of this application's control
 set(CMAKE_CXX_STANDARD 11)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=leak -fno-omit-frame-pointer -Werror -Wall -Wextra")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -fsanitize=leak -fno-omit-frame-pointer -Werror -Wall -Wextra")
 
 # Setup different source file variables
 set(SOURCE_FILES src/cpu/Cpu.cpp src/cpu/Cpu.h src/subsystems/display/IDisplay.h src/subsystems/input/IInputController.h src/storage/Memory.cpp src/storage/Memory.h src/exceptions/IndexOutOfBoundsException.h src/constants/Constants.h src/exceptions/InstructionUnimplementedException.h src/exceptions/BaseException.h src/constants/OpcodeBitmasks.h src/constants/Opcodes.h src/exceptions/UnimplementedException.h src/constants/OpcodeBitshifts.h src/utils/RandomUtil.cpp src/utils/RandomUtil.h src/io/FileByteReader.cpp src/io/FileByteReader.h src/exceptions/IOException.h src/exceptions/InitializationException.h src/subsystems/ISubsystemManager.h src/Chip8.cpp src/Chip8.h src/utils/SleepUtil.cpp src/utils/SleepUtil.h)
