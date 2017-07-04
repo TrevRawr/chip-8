@@ -6,9 +6,9 @@
 
 namespace Chip8 {
 // needed for static class definition of this array to compile
-constexpr unsigned char Chip8::DEFAULT_FONT_SET[FONTSET_BUFFER_SIZE];
+constexpr unsigned char Chip8Emulator::DEFAULT_FONT_SET[FONTSET_BUFFER_SIZE];
 
-void Chip8::beginEmulation() {
+void Chip8Emulator::beginEmulation() {
     // TODO: consider starting this in a separate thread so that the emulator can be stopped if desired
     isEmulating = true;
     while (isEmulating) {
@@ -20,15 +20,15 @@ void Chip8::beginEmulation() {
     }
 }
 
-void Chip8::stopEmulation() { isEmulating = false; }
+void Chip8Emulator::stopEmulation() { isEmulating = false; }
 
-void Chip8::loadFontToMemory() {
+void Chip8Emulator::loadFontToMemory() {
     for (unsigned int i = 0; i < FONTSET_BUFFER_SIZE; i++) {
         memory.setDataAtAddress(i + Constants::MEMORY_FONT_START_LOCATION, DEFAULT_FONT_SET[i]);
     }
 }
 
-void Chip8::loadGameFile(std::string game) {
+void Chip8Emulator::loadGameFile(std::string game) {
     FileByteReader fileByteReader(game);
     const int bufferSize = Memory::NUM_BYTES_OF_MEMORY - Constants::MEMORY_PROGRAM_START_LOCATION;
     uint8_t buffer[bufferSize];
@@ -42,7 +42,7 @@ void Chip8::loadGameFile(std::string game) {
     }
 }
 
-Chip8::Chip8(ISubsystemManager &subsystemManager)
+Chip8Emulator::Chip8Emulator(ISubsystemManager &subsystemManager)
     : memory(Memory()),
       subsystemManager(subsystemManager),
       cpu(Cpu(memory, subsystemManager.getDisplay(), subsystemManager.getInputController())) {

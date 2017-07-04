@@ -15,9 +15,9 @@
  * (ex: IDisplay), then these may need to be injected through the constructor.
  */
 namespace Chip8 {
-class Chip8 {
+class Chip8Emulator {
    public:
-    Chip8(ISubsystemManager& subsystemManager);
+    Chip8Emulator(ISubsystemManager& subsystemManager);
 
     void loadGameFile(std::string game);
     void beginEmulation();

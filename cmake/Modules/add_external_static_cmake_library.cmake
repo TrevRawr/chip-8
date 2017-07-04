@@ -11,7 +11,7 @@ include(ExternalProject)
 # A new library target will be created with the name <libname>
 # Additionally, two variables will be initialized as "return values": <libname>_SRC and <libname>_BIN that point to
 # the source directory and the binary directory of the external project respectively
-function(add_external_static_cmake_library libname url static_library_path)
+function(add_external_static_cmake_library libname url static_library_path libtype)
     set(EXTERNAL_PROJECT_NAME ${libname}_EXTERNAL_PROJECT)
     # Setup an external project for the library, and download it. put it in its own folder.
     ExternalProject_Add(
@@ -32,7 +32,7 @@ function(add_external_static_cmake_library libname url static_library_path)
 
     # Setup a library target (in this project) containing the built static library file from the external project.
     # The key part here is setting IMPORTED_LOCATION to the location of the built external project's static library file.
-    add_library(${libname} IMPORTED STATIC GLOBAL)
+add_library(${libname} IMPORTED ${libtype} GLOBAL)
     set_target_properties(${libname} PROPERTIES
             "IMPORTED_LOCATION" "${${libname}_BIN}/${static_library_path}"
             )
