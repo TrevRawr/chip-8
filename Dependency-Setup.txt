@@ -1,9 +1,0 @@
-#######Build Instructions########
-Ideally, the CMake script would handle downloading all the dependencies from other repositories, but I suck at CMake, so for now, this will have to do...
-
-Setting Up Dependencies For Ubuntu:
-
-1. Install SDL2
-- sudo apt install libsdl2-dev
-
-GTest and GMock are dependencies that should be downloaded and configured automatically by the CMake build script
