@@ -62,8 +62,8 @@ void Display::setSdlPixel(int x, int y, uint32_t pixel) {
 }
 
 Display::~Display() {
-    SDL_DestroyWindow(window);
     SDL_FreeSurface(surface);
+    SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
