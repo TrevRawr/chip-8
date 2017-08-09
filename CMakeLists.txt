@@ -27,7 +27,13 @@ add_custom_target(clangformat COMMAND cd .. && /usr/bin/clang-format -style=file
 find_package(Threads REQUIRED)
 
 # Setup SDL2 Library
-add_external_static_cmake_library(libsdl2 https://www.libsdl.org/tmp/SDL-2.0.5-11113.zip libSDL2.a)
+if (APPLE)
+    add_external_static_cmake_library(libsdl2 https://www.libsdl.org/tmp/SDL-2.0.5-11113.zip libSDL2-2.0.dylib SHARED)
+elseif (UNIX)
+    add_external_static_cmake_library(libsdl2 https://www.libsdl.org/tmp/SDL-2.0.5-11113.zip libSDL2-2.0.so SHARED)
+else()
+    message(FATAL_ERROR "Platform Not Supported... Sorry!")
+endif (APPLE)
 #add sdl dependency on threads library
 set_target_properties(libsdl2 PROPERTIES
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
@@ -36,15 +42,13 @@ set_target_properties(libsdl2 PROPERTIES
 # Setup main emulator executable
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SDL_SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${libsdl2_SRC}/include)
-#the libraries after libsdl2 are dependencies of libsdl2. It won't compile without these
-#thanks to https://github.com/SergNikitin/img_glypher/blob/master/CMakeLists.txt for helping me figure out how to resolve these dependency errors
-target_link_libraries(${PROJECT_NAME} libsdl2 m dl sndio)
+target_link_libraries(${PROJECT_NAME} libsdl2)
 
 #Allows CTest to be used (effectively enables the add_test() command)
 enable_testing()
 
 # Create a library target for testing with GTest
-add_external_static_cmake_library(libgtest https://github.com/google/googletest/archive/master.zip googlemock/gtest/libgtest.a)
+add_external_static_cmake_library(libgtest https://github.com/google/googletest/archive/master.zip googlemock/gtest/libgtest.a STATIC)
 set_target_properties(libgtest PROPERTIES
         "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
         )

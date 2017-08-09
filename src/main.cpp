@@ -10,7 +10,7 @@ using namespace Chip8;
 int main() {
     try {
         SdlSubsystemManager sdlSubsystemManager;
-        Chip8::Chip8 chip8{sdlSubsystemManager};
+        Chip8Emulator chip8{sdlSubsystemManager};
         chip8.loadGameFile("c8games/PONG");
         chip8.beginEmulation();
     } catch (BaseException e) {
