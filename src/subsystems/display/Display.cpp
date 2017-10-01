@@ -43,7 +43,7 @@ Display::Display() {
         throwSdlError("SDL could not initialize video!");
     }
 
-    window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,
+    window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, PHYSICAL_SCREEN_WIDTH, PHYSICAL_SCREEN_HEIGHT,
                               SDL_WINDOW_SHOWN);
     if (window == NULL) {
         // destructor won't be called if throwing from a constructor, so we should clean up after ourselves
@@ -58,7 +58,11 @@ Display::Display() {
 
 void Display::setSdlPixel(int x, int y, uint32_t pixel) {
     Uint32 *pixels = (Uint32 *)surface->pixels;
-    pixels[y * SCREEN_WIDTH + x] = pixel;
+    for (int row = 0; row < SCREEN_SCALE; row++) {
+        for (int col = 0; col < SCREEN_SCALE; col++) {
+            pixels[(y * PHYSICAL_SCREEN_WIDTH * SCREEN_SCALE) + (row * PHYSICAL_SCREEN_WIDTH) + (x * SCREEN_SCALE) + col] = pixel;
+        }
+    }
 }
 
 Display::~Display() {

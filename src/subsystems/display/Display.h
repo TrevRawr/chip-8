@@ -5,10 +5,8 @@
 #include "IDisplay.h"
 
 /**
- * A (very) simple IDisplay implementation using SDL. At the moment, this creates a very small window (because the chip-8's screen
- * resolution is small)
- * Ideally, this class should scale the size of a chip-8 pixel up to be larger than a pixel on the physical screen the emulator
- * renders on (which is hopefully larger than the chip-8's screen).
+ * A (very) simple IDisplay implementation using SDL. Creates a window that is SCREEN_SCALE * the CHIP-8's physical screen resolution.
+ * Ideally, this class should allow the user to specify an arbitrary scale, but the scale is currently hardcoded in SCREEN_SCALE.
  */
 namespace Chip8 {
 class Display : public IDisplay {
@@ -26,8 +24,11 @@ class Display : public IDisplay {
     void updateScreen() override;
 
    private:
+    static const int SCREEN_SCALE = 10;
     static const int SCREEN_WIDTH = 64;
     static const int SCREEN_HEIGHT = 32;
+    static const int PHYSICAL_SCREEN_WIDTH = SCREEN_WIDTH * SCREEN_SCALE;
+    static const int PHYSICAL_SCREEN_HEIGHT = SCREEN_HEIGHT * SCREEN_SCALE;
 
     SDL_Surface *surface = NULL;
     SDL_Window *window = NULL;
